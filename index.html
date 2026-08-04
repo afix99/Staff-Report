@@ -263,7 +263,7 @@
 <body>
 
 <div class="toolbar">
-  <div class="hint">Fill in the form below, then click "Download as PDF" to export it exactly like the printed sheet.</div>
+  <div class="hint">Fill in the form below, then click "Download as PDF" to export it exactly like the printed sheet.<br>Your entries are saved on this device automatically, so it's safe to close or refresh the page.</div>
   <div style="display:flex;gap:10px;">
     <button class="secondary" id="clearBtn">Clear All</button>
     <button id="pdfBtn">Download as PDF</button>
@@ -279,9 +279,9 @@
   <div class="underline"></div>
 
   <div class="meta-row">
-    <div class="field">Outlet: <input type="text" id="outlet" class="outlet-input"></div>
-    <div class="week-title"><input type="text" id="weekTitle" class="week-input" value="WEEK 1: 2 AUG – 9 AUG"></div>
-    <div class="field">Team Leader: <input type="text" id="leader" class="leader-input"></div>
+    <div class="field">Outlet: <input type="text" id="outlet" data-key="outlet" class="outlet-input"></div>
+    <div class="week-title"><input type="text" id="weekTitle" data-key="weekTitle" class="week-input" value="WEEK 1: 2 AUG – 9 AUG"></div>
+    <div class="field">Team Leader: <input type="text" id="leader" data-key="leader" class="leader-input"></div>
   </div>
 
   <table id="mainTable">
@@ -313,9 +313,9 @@
   <div class="summary-box">
     <div class="summary-title">1 WEEK SALES ACCUMULATED</div>
     <div class="summary-line">
-      <div class="item">Sales Target: RM <input type="text" id="salesTarget"></div>
+      <div class="item">Sales Target: RM <input type="text" id="salesTarget" data-key="salesTarget"></div>
       <span class="sep">|</span>
-      <div class="item">Actual Sales: RM <input type="text" id="actualSales"></div>
+      <div class="item">Actual Sales: RM <input type="text" id="actualSales" data-key="actualSales"></div>
       <span class="sep">|</span>
       <div class="item">Extra :) : RM <input type="text" id="extraSales" readonly></div>
       <span class="sep">|</span>

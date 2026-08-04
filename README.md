@@ -15,6 +15,7 @@ A web-based form for tracking weekly jersey sales and point records. This applic
 - **Forgiving Number Entry**: Amounts written with thousands separators or currency text (`10,500`, `RM 10 500`) are read correctly
 - **PDF Export**: Download the completed form as a PDF file
 - **Clean Interface**: Professional design with a navy and red color scheme
+- **Automatic Local Save**: Everything typed into the sheet is stored in the browser as you go, so a refresh, a closed tab or an accidental back button doesn't lose the week's work
 - **Responsive Design**: Works on desktop, tablet and phone. The PDF is always captured at the sheet's full design width, so the exported page looks the same whichever device it was filled in on
 
 ## How to Use
@@ -55,4 +56,5 @@ A web-based form for tracking weekly jersey sales and point records. This applic
 
 - All currency values are in Malaysian Ringgit (RM)
 - The form is pre-configured for an 8-day week (2 Aug - 9 Aug) with 2 staff entries per day
-- Data is not automatically saved; save your work using the PDF export feature
+- Your entries are saved automatically in the browser on the device you filled them in on, so refreshing or closing the page will not lose them. **Clear All** erases that saved copy
+- The saved copy is per-device and per-browser: it is not synced, and clearing your browser's site data removes it. Export the PDF for anything you need to keep or share

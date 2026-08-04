@@ -2,36 +2,29 @@ const days = ["2 Aug","3 Aug","4 Aug","5 Aug","6 Aug","7 Aug","8 Aug","9 Aug"];
 const ROWS_PER_DAY = 2;
 const tbody = document.getElementById('tbody');
 
-function makeInput(cls, extra){
-  return `<input type="text" class="cell-input ${cls||''}" ${extra||''}>`;
+// `key` gives the input a stable identity across reloads so its value can be
+// saved and restored. Computed cells are left without one - they are worked out
+// again from the saved figures.
+function makeInput(cls, extra, key){
+  const k = key ? ` data-key="${key}"` : '';
+  return `<input type="text" class="cell-input ${cls||''}"${k} ${extra||''}>`;
 }
 
 days.forEach((day, dIdx)=>{
   for(let r=0; r<ROWS_PER_DAY; r++){
     const tr = document.createElement('tr');
     tr.dataset.day = dIdx;
-    if(r===0){
-      tr.innerHTML = `
-        <td class="date-cell" rowspan="${ROWS_PER_DAY+1}">${day}</td>
-        <td>${makeInput('staff-input')}</td>
-        <td>${makeInput('q3')}</td>
-        <td>${makeInput('q2')}</td>
-        <td>${makeInput('q1')}</td>
-        <td>${makeInput('rowPcs','readonly')}</td>
-        <td>${makeInput('rowPts','readonly')}</td>
-        <td>${makeInput('rowSales')}</td>
-      `;
-    } else {
-      tr.innerHTML = `
-        <td>${makeInput('staff-input')}</td>
-        <td>${makeInput('q3')}</td>
-        <td>${makeInput('q2')}</td>
-        <td>${makeInput('q1')}</td>
-        <td>${makeInput('rowPcs','readonly')}</td>
-        <td>${makeInput('rowPts','readonly')}</td>
-        <td>${makeInput('rowSales')}</td>
-      `;
-    }
+    const id = `d${dIdx}r${r}`;
+    const cells = `
+      <td>${makeInput('staff-input', '', id+'.staff')}</td>
+      <td>${makeInput('q3', '', id+'.q3')}</td>
+      <td>${makeInput('q2', '', id+'.q2')}</td>
+      <td>${makeInput('q1', '', id+'.q1')}</td>
+      <td>${makeInput('rowPcs','readonly')}</td>
+      <td>${makeInput('rowPts','readonly')}</td>
+      <td>${makeInput('rowSales', '', id+'.sales')}</td>
+    `;
+    tr.innerHTML = (r===0 ? `<td class="date-cell" rowspan="${ROWS_PER_DAY+1}">${day}</td>` : '') + cells;
     tbody.appendChild(tr);
   }
   const totalTr = document.createElement('tr');
@@ -45,7 +38,7 @@ days.forEach((day, dIdx)=>{
     <td class="tot-q1"></td>
     <td class="tot-pcs"></td>
     <td class="tot-pts"></td>
-    <td><input type="text" class="tot-sales-input" placeholder=""></td>
+    <td><input type="text" class="tot-sales-input" data-key="d${dIdx}.totalSales" placeholder=""></td>
   `;
   tbody.appendChild(totalTr);
 });
@@ -103,13 +96,49 @@ function recalc(){
   document.getElementById('balanceSales').value = diff < 0 ? Math.abs(diff).toFixed(2) : '0.00';
 }
 
-document.getElementById('sheet').addEventListener('input', recalc);
+// Everything typed into the sheet is kept in this browser so a refresh, an
+// accidental back button or a closed tab doesn't lose a week's work. Only the
+// typed figures are stored; the computed cells are worked out again on load.
+const STORAGE_KEY = 'weeklyJerseySales.v1';
+
+function typedInputs(){
+  return document.querySelectorAll('#sheet input[data-key]');
+}
+
+function saveData(){
+  const data = {};
+  typedInputs().forEach(inp=>{ if(inp.value) data[inp.dataset.key] = inp.value; });
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }catch(e){
+    // Private mode or a full quota - the form still works, it just won't persist.
+  }
+}
+
+function loadData(){
+  let data;
+  try{
+    data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+  }catch(e){
+    return; // Corrupted entry - start clean rather than break the page.
+  }
+  if(!data || typeof data !== 'object') return;
+  typedInputs().forEach(inp=>{
+    const v = data[inp.dataset.key];
+    if(typeof v === 'string') inp.value = v;
+  });
+}
+
+document.getElementById('sheet').addEventListener('input', ()=>{ recalc(); saveData(); });
+
+loadData();
 recalc();
 
 document.getElementById('clearBtn').addEventListener('click', ()=>{
   if(!confirm('Clear all filled data?')) return;
   document.querySelectorAll('#sheet input:not(#weekTitle)').forEach(inp=>{ inp.value=''; });
   recalc();
+  saveData();
 });
 
 // The design width of the sheet, matching #sheet's max-width. The PDF is always
