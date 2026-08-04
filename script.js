@@ -39,13 +39,13 @@ days.forEach((day, dIdx)=>{
   totalTr.dataset.day = dIdx;
   totalTr.dataset.total = '1';
   totalTr.innerHTML = `
-    <td class="total-label" colspan="2">TOTAL:</td>
+    <td class="total-label">TOTAL:</td>
     <td class="tot-q3"></td>
     <td class="tot-q2"></td>
     <td class="tot-q1"></td>
     <td class="tot-pcs"></td>
     <td class="tot-pts"></td>
-    <td class="tot-sales"></td>
+    <td><input type="text" class="tot-sales-input" placeholder=""></td>
   `;
   tbody.appendChild(totalTr);
 });
@@ -53,21 +53,22 @@ days.forEach((day, dIdx)=>{
 function num(v){ const n = parseFloat(v); return isNaN(n) ? 0 : n; }
 
 function recalc(){
-  let grand3=0, grand2=0, grand1=0, grandPcs=0, grandSales=0;
+  // Points / pcs are accumulated automatically, strictly under their own Total columns.
+  // Sales (RM) is never auto-computed anywhere - staff fill it in manually, day by day.
+  let grand3=0, grand2=0, grand1=0, grandPcs=0;
 
   days.forEach((day, dIdx)=>{
     const rows = tbody.querySelectorAll(`tr[data-day="${dIdx}"]:not([data-total])`);
-    let day3=0, day2=0, day1=0, dayPcs=0, dayPts=0, daySales=0;
+    let day3=0, day2=0, day1=0, dayPcs=0, dayPts=0;
     rows.forEach(tr=>{
       const q3 = num(tr.querySelector('.q3').value);
       const q2 = num(tr.querySelector('.q2').value);
       const q1 = num(tr.querySelector('.q1').value);
       const pcs = q3+q2+q1;
       const pts = q3*3 + q2*2 + q1*1;
-      const sales = num(tr.querySelector('.rowSales').value);
       tr.querySelector('.rowPcs').value = pcs ? pcs : '';
       tr.querySelector('.rowPts').value = pts ? pts : '';
-      day3+=q3; day2+=q2; day1+=q1; dayPcs+=pcs; dayPts+=pts; daySales+=sales;
+      day3+=q3; day2+=q2; day1+=q1; dayPcs+=pcs; dayPts+=pts;
     });
     const totalTr = tbody.querySelector(`tr[data-day="${dIdx}"][data-total="1"]`);
     totalTr.querySelector('.tot-q3').textContent = day3 || '';
@@ -75,19 +76,20 @@ function recalc(){
     totalTr.querySelector('.tot-q1').textContent = day1 || '';
     totalTr.querySelector('.tot-pcs').textContent = dayPcs || '';
     totalTr.querySelector('.tot-pts').textContent = dayPts || '';
-    totalTr.querySelector('.tot-sales').textContent = daySales ? daySales.toFixed(2) : '';
+    // Sales total cell is left untouched here - it's a manual input the user fills in.
 
-    grand3+=day3; grand2+=day2; grand1+=day1; grandPcs+=dayPcs; grandSales+=daySales;
+    grand3+=day3; grand2+=day2; grand1+=day1; grandPcs+=dayPcs;
   });
 
   document.getElementById('pcs3').value = grand3 || 0;
   document.getElementById('pcs2').value = grand2 || 0;
   document.getElementById('pcs1').value = grand1 || 0;
   document.getElementById('pcsTotal').value = grandPcs || 0;
-  document.getElementById('actualSales').value = grandSales.toFixed(2);
 
+  // Actual Sales, Extra and Balance are based on what the user manually enters, not auto-summed.
+  const actual = num(document.getElementById('actualSales').value);
   const target = num(document.getElementById('salesTarget').value);
-  const diff = grandSales - target;
+  const diff = actual - target;
   document.getElementById('extraSales').value = diff > 0 ? diff.toFixed(2) : '0.00';
   document.getElementById('balanceSales').value = diff < 0 ? Math.abs(diff).toFixed(2) : '0.00';
 }
