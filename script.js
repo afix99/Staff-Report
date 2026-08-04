@@ -50,12 +50,21 @@ days.forEach((day, dIdx)=>{
   tbody.appendChild(totalTr);
 });
 
-function num(v){ const n = parseFloat(v); return isNaN(n) ? 0 : n; }
+// Strips thousands separators, spaces and currency text before parsing, so a
+// figure written the way it appears on the sheet ("10,500", "RM 10 500") totals
+// correctly instead of stopping at the first comma.
+function num(v){
+  const n = parseFloat(String(v).replace(/[^0-9.\-]/g, ''));
+  return isNaN(n) ? 0 : n;
+}
 
 function recalc(){
-  // Only the per-row and per-day pcs/points totals are worked out automatically.
-  // Sales (RM) and every field in the "1 WEEK SALES ACCUMULATED" box are filled
-  // in by hand, so nothing below the table is ever computed or overwritten here.
+  // Pcs and points are accumulated automatically all the way through: per row,
+  // per day, and into the weekly totals. Sales (RM) is the exception - the row
+  // and day Sales cells, plus Sales Target and Actual Sales, are typed in by
+  // hand and never overwritten.
+  let grand3=0, grand2=0, grand1=0, grandPcs=0;
+
   days.forEach((day, dIdx)=>{
     const rows = tbody.querySelectorAll(`tr[data-day="${dIdx}"]:not([data-total])`);
     let day3=0, day2=0, day1=0, dayPcs=0, dayPts=0;
@@ -76,7 +85,22 @@ function recalc(){
     totalTr.querySelector('.tot-pcs').textContent = dayPcs || '';
     totalTr.querySelector('.tot-pts').textContent = dayPts || '';
     // Sales total cell is left untouched here - it's a manual input the user fills in.
+
+    grand3+=day3; grand2+=day2; grand1+=day1; grandPcs+=dayPcs;
   });
+
+  document.getElementById('pcs3').value = grand3 || 0;
+  document.getElementById('pcs2').value = grand2 || 0;
+  document.getElementById('pcs1').value = grand1 || 0;
+  document.getElementById('pcsTotal').value = grandPcs || 0;
+
+  // Extra / Balance come from the two figures the user types in, not from the
+  // Sales column, so a week can be reconciled against till receipts.
+  const actual = num(document.getElementById('actualSales').value);
+  const target = num(document.getElementById('salesTarget').value);
+  const diff = actual - target;
+  document.getElementById('extraSales').value = diff > 0 ? diff.toFixed(2) : '0.00';
+  document.getElementById('balanceSales').value = diff < 0 ? Math.abs(diff).toFixed(2) : '0.00';
 }
 
 document.getElementById('sheet').addEventListener('input', recalc);
