@@ -22,6 +22,7 @@ A web-based form for tracking weekly jersey sales and point records. This applic
 - **Manual Sales Entry**: Sales (RM) figures — per transaction and per day, plus Sales Target and Actual Sales — are entered by hand rather than auto-summed, so staff can reconcile against till receipts
 - **Forgiving Number Entry**: Amounts written with thousands separators or currency text (`10,500`, `RM 10 500`) are read correctly
 - **PDF Export**: Download the completed form as a PDF file
+- **Hand Off Between People**: The exported PDF quietly carries the week's figures inside it. Send it to whoever is on duty next and they click **Import from PDF** to load everything already entered, then just add their own day — nobody retypes the earlier days
 - **Clean Interface**: Professional design with a navy and red color scheme
 - **Automatic Local Save**: Everything typed into the sheet is stored in the browser as you go, so a refresh, a closed tab or an accidental back button doesn't lose the week's work. Each week is saved separately, so switching weeks with the picker keeps both
 - **Responsive Design**: Works on desktop, tablet and phone. The PDF is always captured at the sheet's full design width, so the exported page looks the same whichever device it was filled in on
@@ -39,6 +40,15 @@ A web-based form for tracking weekly jersey sales and point records. This applic
 5. Enter your **Sales Target** and **Actual Sales** in the summary box
 6. Everything else updates automatically — row and daily totals, the weekly **Total Pcs Sold** figures, and **Extra** / **Balance**
 7. Click **Download as PDF** to export the form
+
+### Passing the report to the next person
+
+1. Finish your day and click **Download as PDF**
+2. Send that PDF to whoever fills in the next day (WhatsApp, email, anything that keeps the file intact)
+3. They open the form, click **Import from PDF** and pick the file
+4. The whole week so far appears, on the right week — they add their day and export a fresh PDF for the person after them
+
+The data travels inside the PDF itself, so no account, server or shared drive is needed. The PDF still prints and reads exactly as before.
 
 ## File Structure
 
@@ -66,3 +76,6 @@ A web-based form for tracking weekly jersey sales and point records. This applic
 - Each week runs for 8 days from the date chosen in the picker, with 2 staff entries per day
 - Your entries are saved automatically in the browser on the device you filled them in on, so refreshing or closing the page will not lose them. Each week has its own saved copy, keyed on the starting date. **Clear All** erases the saved copy for the week currently shown
 - The saved copy is per-device and per-browser: it is not synced, and clearing your browser's site data removes it. Export the PDF for anything you need to keep or share
+- Importing a PDF **replaces** what is on screen for that week, rather than merging into it, so the sheet ends up matching the PDF exactly. You are asked to confirm first
+- Only PDFs exported by this form can be imported. One saved before this feature existed, or produced by any other program, has no data to read
+- Send the PDF as a file/document. Anything that turns it into a picture first (for example printing and rescanning it) drops the embedded data
