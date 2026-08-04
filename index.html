@@ -180,13 +180,23 @@
   }
   .summary-line{
     display:flex;
-    flex-wrap:wrap;
-    gap:8px 4px;
+    flex-wrap:nowrap;
+    align-items:baseline;
+    gap:6px;
     font-size:13px;
     font-weight:600;
     margin-bottom:10px;
   }
-  .summary-line .item{display:flex;align-items:baseline;gap:6px;}
+  /* Each item takes an equal share of the row so all four stay on one line
+     instead of wrapping and pushing the summary box out of shape. */
+  .summary-line .item{
+    flex:1 1 0;
+    min-width:0;
+    display:flex;
+    align-items:baseline;
+    gap:6px;
+    white-space:nowrap;
+  }
   .summary-line input{
     border:none;
     border-bottom:1.5px solid var(--navy);
@@ -195,10 +205,22 @@
     font-weight:700;
     font-size:13px;
     color:var(--navy);
-    width:80px;
+    flex:1 1 auto;
+    width:auto;
+    min-width:0;
     padding:2px;
   }
-  .summary-line span.sep{color:var(--navy);opacity:.5;}
+  .summary-line span.sep{color:var(--navy);opacity:.5;flex:0 0 auto;}
+
+  /* Static stand-ins swapped in for <input> during PDF capture. html2canvas
+     mis-positions input value text and clips it, so the export renders plain
+     text boxes with identical geometry instead. */
+  .pdf-frozen{
+    display:block;
+    line-height:1.35;
+    white-space:pre;
+    overflow:visible;
+  }
   .dots{
     border-top:3px dotted var(--red);
     margin:6px 0 14px 0;
