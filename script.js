@@ -53,10 +53,9 @@ days.forEach((day, dIdx)=>{
 function num(v){ const n = parseFloat(v); return isNaN(n) ? 0 : n; }
 
 function recalc(){
-  // Points / pcs are accumulated automatically, strictly under their own Total columns.
-  // Sales (RM) is never auto-computed anywhere - staff fill it in manually, day by day.
-  let grand3=0, grand2=0, grand1=0, grandPcs=0;
-
+  // Only the per-row and per-day pcs/points totals are worked out automatically.
+  // Sales (RM) and every field in the "1 WEEK SALES ACCUMULATED" box are filled
+  // in by hand, so nothing below the table is ever computed or overwritten here.
   days.forEach((day, dIdx)=>{
     const rows = tbody.querySelectorAll(`tr[data-day="${dIdx}"]:not([data-total])`);
     let day3=0, day2=0, day1=0, dayPcs=0, dayPts=0;
@@ -77,21 +76,7 @@ function recalc(){
     totalTr.querySelector('.tot-pcs').textContent = dayPcs || '';
     totalTr.querySelector('.tot-pts').textContent = dayPts || '';
     // Sales total cell is left untouched here - it's a manual input the user fills in.
-
-    grand3+=day3; grand2+=day2; grand1+=day1; grandPcs+=dayPcs;
   });
-
-  document.getElementById('pcs3').value = grand3 || 0;
-  document.getElementById('pcs2').value = grand2 || 0;
-  document.getElementById('pcs1').value = grand1 || 0;
-  document.getElementById('pcsTotal').value = grandPcs || 0;
-
-  // Actual Sales, Extra and Balance are based on what the user manually enters, not auto-summed.
-  const actual = num(document.getElementById('actualSales').value);
-  const target = num(document.getElementById('salesTarget').value);
-  const diff = actual - target;
-  document.getElementById('extraSales').value = diff > 0 ? diff.toFixed(2) : '0.00';
-  document.getElementById('balanceSales').value = diff < 0 ? Math.abs(diff).toFixed(2) : '0.00';
 }
 
 document.getElementById('sheet').addEventListener('input', recalc);

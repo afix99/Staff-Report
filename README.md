@@ -9,9 +9,8 @@ A web-based form for tracking weekly jersey sales and point records. This applic
   - Calculates total pieces sold per transaction
   - Calculates total points based on quantity (3-point, 2-point, 1-point items)
   - Daily totals for pieces and points
-  - Weekly pieces summary
-- **Manual Sales Entry**: Sales (RM) figures — per transaction, per day, and the weekly Actual Sales total — are entered by hand rather than auto-summed, so staff can reconcile against till receipts
-- **Sales Target Tracking**: Set a sales target and enter actual sales to get an automatic calculation of surplus/deficit
+- **Manual Sales Entry**: Sales (RM) figures — per transaction and per day — are entered by hand rather than auto-summed, so staff can reconcile against till receipts
+- **Manual Weekly Summary**: Every field in the "1 Week Sales Accumulated" box (Sales Target, Actual Sales, Extra, Balance, and all the Total Pcs Sold figures) is typed in by hand and never overwritten by the form
 - **PDF Export**: Download the completed form as a PDF file
 - **Clean Interface**: Professional design with a navy and red color scheme
 - **Responsive Design**: Works on desktop and tablet devices
@@ -26,8 +25,8 @@ A web-based form for tracking weekly jersey sales and point records. This applic
    - **2-Point Qty**: Number of 2-point items sold
    - **1-Point Qty**: Number of 1-point items sold
    - **Sales (RM)**: Sales amount in Malaysian Ringgit (entered manually per transaction and per day)
-5. Set your **Sales Target** and enter your **Actual Sales** in the summary box
-6. Pieces and points totals update automatically; Extra/Balance is calculated from your Sales Target and Actual Sales
+5. Fill in the **1 Week Sales Accumulated** box yourself — Sales Target, Actual Sales, Extra, Balance and the Total Pcs Sold figures are all manual entry
+6. Only the per-row and per-day **Total Pcs** / **Total Points** update automatically
 7. Click **Download as PDF** to export the form
 
 ## File Structure
