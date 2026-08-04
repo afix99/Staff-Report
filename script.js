@@ -53,10 +53,9 @@ days.forEach((day, dIdx)=>{
 function num(v){ const n = parseFloat(v); return isNaN(n) ? 0 : n; }
 
 function recalc(){
-  // Points / pcs are accumulated automatically, strictly under their own Total columns.
-  // Sales (RM) is never auto-computed anywhere - staff fill it in manually, day by day.
-  let grand3=0, grand2=0, grand1=0, grandPcs=0;
-
+  // Only the per-row and per-day pcs/points totals are worked out automatically.
+  // Sales (RM) and every field in the "1 WEEK SALES ACCUMULATED" box are filled
+  // in by hand, so nothing below the table is ever computed or overwritten here.
   days.forEach((day, dIdx)=>{
     const rows = tbody.querySelectorAll(`tr[data-day="${dIdx}"]:not([data-total])`);
     let day3=0, day2=0, day1=0, dayPcs=0, dayPts=0;
@@ -77,21 +76,7 @@ function recalc(){
     totalTr.querySelector('.tot-pcs').textContent = dayPcs || '';
     totalTr.querySelector('.tot-pts').textContent = dayPts || '';
     // Sales total cell is left untouched here - it's a manual input the user fills in.
-
-    grand3+=day3; grand2+=day2; grand1+=day1; grandPcs+=dayPcs;
   });
-
-  document.getElementById('pcs3').value = grand3 || 0;
-  document.getElementById('pcs2').value = grand2 || 0;
-  document.getElementById('pcs1').value = grand1 || 0;
-  document.getElementById('pcsTotal').value = grandPcs || 0;
-
-  // Actual Sales, Extra and Balance are based on what the user manually enters, not auto-summed.
-  const actual = num(document.getElementById('actualSales').value);
-  const target = num(document.getElementById('salesTarget').value);
-  const diff = actual - target;
-  document.getElementById('extraSales').value = diff > 0 ? diff.toFixed(2) : '0.00';
-  document.getElementById('balanceSales').value = diff < 0 ? Math.abs(diff).toFixed(2) : '0.00';
 }
 
 document.getElementById('sheet').addEventListener('input', recalc);
@@ -103,36 +88,75 @@ document.getElementById('clearBtn').addEventListener('click', ()=>{
   recalc();
 });
 
+// html2canvas draws <input> value text at a wrong vertical offset and then clips
+// it at the input's box, so filled cells come out with their bottoms shaved off.
+// Swapping each input for a static element of identical geometry avoids the bug
+// entirely. Returns a function that puts the real inputs back.
+function freezeInputsForCapture(root){
+  const undo = [];
+  root.querySelectorAll('input').forEach(inp=>{
+    const cs = getComputedStyle(inp);
+    const span = document.createElement('span');
+    span.className = 'pdf-frozen';
+    // A non-breaking space keeps empty fields at full height so blank rows and
+    // the fill-in underlines don't collapse.
+    span.textContent = inp.value || ' ';
+    span.style.width = cs.width;
+    span.style.padding = cs.padding;
+    span.style.textAlign = cs.textAlign;
+    // Set font properties individually rather than via the `font` shorthand,
+    // which would also reset the line-height that gives the text room to render.
+    span.style.lineHeight = '1.35';
+    span.style.fontFamily = cs.fontFamily;
+    span.style.fontSize = cs.fontSize;
+    span.style.fontWeight = cs.fontWeight;
+    span.style.color = cs.color;
+    if(parseFloat(cs.borderBottomWidth) > 0){
+      span.style.borderBottom = `${cs.borderBottomWidth} ${cs.borderBottomStyle} ${cs.borderBottomColor}`;
+    }
+    inp.style.display = 'none';
+    inp.parentNode.insertBefore(span, inp);
+    undo.push(()=>{ span.remove(); inp.style.display = ''; });
+  });
+  return ()=>undo.forEach(fn=>fn());
+}
+
 document.getElementById('pdfBtn').addEventListener('click', async ()=>{
   const btn = document.getElementById('pdfBtn');
   btn.textContent = 'Generating...';
   btn.disabled = true;
 
   const sheet = document.getElementById('sheet');
-  const inputs = sheet.querySelectorAll('input');
-  inputs.forEach(i=>{ i.style.borderBottom = i.classList.contains('cell-input') ? 'none' : i.style.borderBottom; });
+  let unfreeze = null;
+  try{
+    unfreeze = freezeInputsForCapture(sheet);
 
-  const canvas = await html2canvas(sheet, {scale: 3, backgroundColor: '#ffffff'});
-  const imgData = canvas.toDataURL('image/png');
+    const canvas = await html2canvas(sheet, {scale: 3, backgroundColor: '#ffffff'});
+    const imgData = canvas.toDataURL('image/png');
 
-  const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF('p', 'pt', 'a4');
-  const pageWidth = pdf.internal.pageSize.getWidth();
-  const pageHeight = pdf.internal.pageSize.getHeight();
-  const imgWidth = pageWidth - 40;
-  const imgHeight = canvas.height * (imgWidth / canvas.width);
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p', 'pt', 'a4');
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const margin = 20;
+    const maxWidth = pageWidth - margin*2;
+    const maxHeight = pageHeight - margin*2;
 
-  let y = 20;
-  if(imgHeight <= pageHeight - 40){
-    pdf.addImage(imgData, 'PNG', 20, y, imgWidth, imgHeight);
-  } else {
-    const scaleFactor = (pageHeight - 40) / imgHeight;
-    pdf.addImage(imgData, 'PNG', 20, y, imgWidth*scaleFactor, imgHeight*scaleFactor);
+    // Fit the sheet inside the page on both axes and centre it, so a taller
+    // sheet scales down instead of running off the bottom edge.
+    const scale = Math.min(maxWidth / canvas.width, maxHeight / canvas.height);
+    const imgWidth = canvas.width * scale;
+    const imgHeight = canvas.height * scale;
+    const x = (pageWidth - imgWidth) / 2;
+    const y = margin;
+
+    pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
+
+    const outletVal = document.getElementById('outlet').value || 'Outlet';
+    pdf.save(`Weekly_Jersey_Sales_${outletVal.replace(/\s+/g,'_')}.pdf`);
+  } finally {
+    if(unfreeze) unfreeze();
+    btn.textContent = 'Download as PDF';
+    btn.disabled = false;
   }
-
-  const outletVal = document.getElementById('outlet').value || 'Outlet';
-  pdf.save(`Weekly_Jersey_Sales_${outletVal.replace(/\s+/g,'_')}.pdf`);
-
-  btn.textContent = 'Download as PDF';
-  btn.disabled = false;
 });
