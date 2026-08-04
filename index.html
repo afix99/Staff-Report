@@ -240,6 +240,24 @@
     vertical-align:middle;
     margin:0 8px;
   }
+
+  /* On a phone the four summary items cannot share one line without their
+     labels colliding, so let them fall into two columns. The PDF is captured at
+     the full design width, so the export keeps the single-line layout. */
+  @media (max-width: 700px){
+    .summary-line{flex-wrap:wrap;}
+    /* One field per row - two columns leaves the labels so little space that
+       the amounts get cut off mid-number. */
+    .summary-line .item{flex:1 1 100%;}
+    .summary-line span.sep{display:none;}
+  }
+
+  /* The sheet is wider than a phone screen, so let it scroll sideways instead
+     of squeezing the table into an unreadable column. */
+  @media (max-width: 880px){
+    body{padding:12px;}
+    #sheet{padding:18px 16px 20px 16px;}
+  }
 </style>
 </head>
 <body>

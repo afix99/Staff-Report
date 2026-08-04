@@ -112,6 +112,10 @@ document.getElementById('clearBtn').addEventListener('click', ()=>{
   recalc();
 });
 
+// The design width of the sheet, matching #sheet's max-width. The PDF is always
+// captured at this width so the export looks identical on phone and desktop.
+const EXPORT_WIDTH = 820;
+
 // html2canvas draws <input> value text at a wrong vertical offset and then clips
 // it at the input's box, so filled cells come out with their bottoms shaved off.
 // Swapping each input for a static element of identical geometry avoids the bug
@@ -152,10 +156,24 @@ document.getElementById('pdfBtn').addEventListener('click', async ()=>{
 
   const sheet = document.getElementById('sheet');
   let unfreeze = null;
+  // html2canvas captures whatever width the device gives the sheet, so on a
+  // phone the whole form was laid out narrow and exported squashed - title
+  // wrapped over several lines, columns crushed together. Pin the sheet to its
+  // full design width for the capture so every device produces the same page.
+  const prevWidth = sheet.style.width;
+  const prevMaxWidth = sheet.style.maxWidth;
   try{
+    sheet.style.width = EXPORT_WIDTH + 'px';
+    sheet.style.maxWidth = 'none';
+    // Freeze after the resize so the stand-ins copy the widened layout.
     unfreeze = freezeInputsForCapture(sheet);
 
-    const canvas = await html2canvas(sheet, {scale: 3, backgroundColor: '#ffffff'});
+    const canvas = await html2canvas(sheet, {
+      scale: 3,
+      backgroundColor: '#ffffff',
+      width: EXPORT_WIDTH,
+      windowWidth: EXPORT_WIDTH
+    });
     const imgData = canvas.toDataURL('image/png');
 
     const { jsPDF } = window.jspdf;
@@ -180,6 +198,8 @@ document.getElementById('pdfBtn').addEventListener('click', async ()=>{
     pdf.save(`Weekly_Jersey_Sales_${outletVal.replace(/\s+/g,'_')}.pdf`);
   } finally {
     if(unfreeze) unfreeze();
+    sheet.style.width = prevWidth;
+    sheet.style.maxWidth = prevMaxWidth;
     btn.textContent = 'Download as PDF';
     btn.disabled = false;
   }

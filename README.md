@@ -15,7 +15,7 @@ A web-based form for tracking weekly jersey sales and point records. This applic
 - **Forgiving Number Entry**: Amounts written with thousands separators or currency text (`10,500`, `RM 10 500`) are read correctly
 - **PDF Export**: Download the completed form as a PDF file
 - **Clean Interface**: Professional design with a navy and red color scheme
-- **Responsive Design**: Works on desktop and tablet devices
+- **Responsive Design**: Works on desktop, tablet and phone. The PDF is always captured at the sheet's full design width, so the exported page looks the same whichever device it was filled in on
 
 ## How to Use
 
