@@ -18,10 +18,36 @@
   body{
     margin:0;
     padding:24px;
+    padding-top:56px;
     background:#eef0f6;
     font-family:'Segoe UI', Arial, sans-serif;
     color:var(--navy);
   }
+
+  /* Sticky running totals */
+  #runningBar{
+    position:fixed;
+    top:0; left:0; right:0;
+    background:var(--navy);
+    color:#fff;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    /* Wrap rather than run off both edges when four readouts don't fit. */
+    flex-wrap:wrap;
+    gap:4px 28px;
+    padding:10px 16px;
+    font-size:13px;
+    font-weight:600;
+    z-index:1000;
+    box-shadow:0 2px 8px rgba(0,0,0,.2);
+    letter-spacing:.3px;
+  }
+  /* Direct children only - the Diff readout nests a label span, which would
+     otherwise have the dimming applied twice. */
+  #runningBar > span{opacity:.85; white-space:nowrap;}
+  #runningBar b{margin-left:4px; opacity:1; font-size:14px;}
+
   .toolbar{
     max-width:820px;
     margin:0 auto 16px auto;
@@ -32,6 +58,26 @@
     justify-content:space-between;
   }
   .toolbar .hint{font-size:13px;color:#555;}
+  .toolbar-left, .toolbar-right{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+
+  .week-picker{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:14px;
+    font-weight:700;
+    color:var(--navy);
+  }
+  .week-picker input{
+    border:1.5px solid var(--navy);
+    border-radius:8px;
+    padding:8px 12px;
+    font-family:inherit;
+    font-size:14px;
+    color:var(--navy);
+    background:#fff;
+  }
+
   button{
     background:var(--navy);
     color:#fff;
@@ -44,6 +90,26 @@
   }
   button.secondary{background:#8a93b3;}
   button:hover{opacity:.9;}
+  button.copy-names{
+    display:block;
+    margin-top:8px;
+    font-size:11px;
+    color:var(--red);
+    background:transparent;
+    border:none;
+    padding:4px 2px;
+    cursor:pointer;
+    font-weight:700;
+    border-radius:4px;
+    /* The date column is only 9% wide - keep the label inside it instead of
+       letting it run across the Staff column and over the TOTAL label. */
+    width:100%;
+    max-width:100%;
+    white-space:normal;
+    line-height:1.15;
+  }
+  button.copy-names:hover{background:rgba(226,67,43,.08); text-decoration:underline;}
+  button.copy-names:disabled{opacity:.4; cursor:not-allowed;}
 
   #sheet{
     max-width:820px;
@@ -102,7 +168,7 @@
   }
   .outlet-input{width:150px;}
   .leader-input{width:150px;}
-  .week-input{width:220px;text-align:center;font-weight:800;}
+  .week-input{width:260px;text-align:center;font-weight:800;}
 
   table{
     width:100%;
@@ -160,6 +226,11 @@
     color:var(--navy);
     padding:2px;
   }
+  .reconcile-warn{
+    border-bottom:2px solid var(--red) !important;
+    background:#fff0f0 !important;
+    border-radius:2px;
+  }
 
   .summary-box{
     margin-top:22px;
@@ -187,8 +258,6 @@
     font-weight:600;
     margin-bottom:10px;
   }
-  /* Each item takes an equal share of the row so all four stay on one line
-     instead of wrapping and pushing the summary box out of shape. */
   .summary-line .item{
     flex:1 1 0;
     min-width:0;
@@ -212,9 +281,6 @@
   }
   .summary-line span.sep{color:var(--navy);opacity:.5;flex:0 0 auto;}
 
-  /* Static stand-ins swapped in for <input> during PDF capture. html2canvas
-     mis-positions input value text and clips it, so the export renders plain
-     text boxes with identical geometry instead. */
   .pdf-frozen{
     display:block;
     line-height:1.35;
@@ -241,34 +307,45 @@
     margin:0 8px;
   }
 
-  /* On a phone the four summary items cannot share one line without their
-     labels colliding, so let them fall into two columns. The PDF is captured at
-     the full design width, so the export keeps the single-line layout. */
   @media (max-width: 700px){
     .summary-line{flex-wrap:wrap;}
-    /* One field per row - two columns leaves the labels so little space that
-       the amounts get cut off mid-number. */
     .summary-line .item{flex:1 1 100%;}
     .summary-line span.sep{display:none;}
+    #runningBar{gap:2px 14px; font-size:11.5px; padding:6px 8px;}
+    #runningBar b{font-size:12px;}
+    button.copy-names{font-size:9px; margin-top:4px;}
+    body{padding-top:56px;}
   }
-
-  /* The sheet is wider than a phone screen, so let it scroll sideways instead
-     of squeezing the table into an unreadable column. */
   @media (max-width: 880px){
-    body{padding:12px;}
+    body{padding:12px; padding-top:48px;}
     #sheet{padding:18px 16px 20px 16px;}
   }
 </style>
 </head>
 <body>
 
+<div id="runningBar">
+  <span>Target: <b id="runTarget">-</b></span>
+  <span>Actual: <b id="runActual">-</b></span>
+  <span>Total PCS: <b id="runPcs">0</b></span>
+  <span><span id="runDiffLabel">Diff:</span> <b id="runDiff">-</b></span>
+</div>
+
 <div class="toolbar">
-  <div class="hint">Fill in the form below, then click "Download as PDF" to export it exactly like the printed sheet.<br>Your entries are saved on this device automatically, so it's safe to close or refresh the page.</div>
-  <div style="display:flex;gap:10px;">
+  <div class="toolbar-left">
+    <div class="week-picker">
+      <label for="weekStart">Week starting:</label>
+      <input type="date" id="weekStart">
+    </div>
+    <div class="hint">Fill the form, then click "Download as PDF".<br>Data auto-saves per week.</div>
+  </div>
+  <div class="toolbar-right">
     <button class="secondary" id="clearBtn">Clear All</button>
     <button id="pdfBtn">Download as PDF</button>
   </div>
 </div>
+
+<datalist id="staffList"></datalist>
 
 <div id="sheet">
   <div class="header">
@@ -280,7 +357,7 @@
 
   <div class="meta-row">
     <div class="field">Outlet: <input type="text" id="outlet" data-key="outlet" class="outlet-input"></div>
-    <div class="week-title"><input type="text" id="weekTitle" data-key="weekTitle" class="week-input" value="WEEK 1: 2 AUG – 9 AUG"></div>
+    <div class="week-title"><input type="text" id="weekTitle" data-key="weekTitle" class="week-input" value="WEEK: 2 Aug – 9 Aug"></div>
     <div class="field">Team Leader: <input type="text" id="leader" data-key="leader" class="leader-input"></div>
   </div>
 
@@ -313,9 +390,9 @@
   <div class="summary-box">
     <div class="summary-title">1 WEEK SALES ACCUMULATED</div>
     <div class="summary-line">
-      <div class="item">Sales Target: RM <input type="text" id="salesTarget" data-key="salesTarget"></div>
+      <div class="item">Sales Target: RM <input type="text" id="salesTarget" data-key="salesTarget" inputmode="numeric"></div>
       <span class="sep">|</span>
-      <div class="item">Actual Sales: RM <input type="text" id="actualSales" data-key="actualSales"></div>
+      <div class="item">Actual Sales: RM <input type="text" id="actualSales" data-key="actualSales" inputmode="numeric"></div>
       <span class="sep">|</span>
       <div class="item">Extra :) : RM <input type="text" id="extraSales" readonly></div>
       <span class="sep">|</span>
