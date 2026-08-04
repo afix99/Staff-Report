@@ -4,7 +4,15 @@ A web-based form for tracking weekly jersey sales and point records. This applic
 
 ## Features
 
+- **Week Picker**: Choose the week's starting date and the eight day rows relabel themselves automatically
 - **Daily Sales Tracking**: Record sales data for up to 2 staff members per day across 8 days
+- **Running Totals Bar**: A bar pinned to the top of the screen shows Target, Actual, Total Pcs and the Extra/Balance difference while you scroll
+- **Faster Entry**:
+  - Arrow keys and Enter move between cells, staying in the same column vertically
+  - Paste a block of cells straight from Excel or Google Sheets
+  - Staff names you have already typed are offered as autocomplete suggestions
+  - **Copy names** pulls the previous day's staff names into the next day
+- **Reconciliation Check**: If a day's TOTAL Sales figure doesn't match the sum of that day's rows, the cell is highlighted in red
 - **Automatic Calculations**: 
   - Calculates total pieces sold per transaction
   - Calculates total points based on quantity (3-point, 2-point, 1-point items)
@@ -15,14 +23,14 @@ A web-based form for tracking weekly jersey sales and point records. This applic
 - **Forgiving Number Entry**: Amounts written with thousands separators or currency text (`10,500`, `RM 10 500`) are read correctly
 - **PDF Export**: Download the completed form as a PDF file
 - **Clean Interface**: Professional design with a navy and red color scheme
-- **Automatic Local Save**: Everything typed into the sheet is stored in the browser as you go, so a refresh, a closed tab or an accidental back button doesn't lose the week's work
+- **Automatic Local Save**: Everything typed into the sheet is stored in the browser as you go, so a refresh, a closed tab or an accidental back button doesn't lose the week's work. Each week is saved separately, so switching weeks with the picker keeps both
 - **Responsive Design**: Works on desktop, tablet and phone. The PDF is always captured at the sheet's full design width, so the exported page looks the same whichever device it was filled in on
 
 ## How to Use
 
 1. Open `index.html` in a web browser
-2. Fill in the outlet name and team leader information
-3. Update the week title if needed
+2. Set **Week starting** to the first day of the week (it defaults to this week's Monday)
+3. Fill in the outlet name and team leader information
 4. Enter staff names and sales data for each day:
    - **3-Point Qty**: Number of 3-point items sold
    - **2-Point Qty**: Number of 2-point items sold
@@ -55,6 +63,6 @@ A web-based form for tracking weekly jersey sales and point records. This applic
 ## Notes
 
 - All currency values are in Malaysian Ringgit (RM)
-- The form is pre-configured for an 8-day week (2 Aug - 9 Aug) with 2 staff entries per day
-- Your entries are saved automatically in the browser on the device you filled them in on, so refreshing or closing the page will not lose them. **Clear All** erases that saved copy
+- Each week runs for 8 days from the date chosen in the picker, with 2 staff entries per day
+- Your entries are saved automatically in the browser on the device you filled them in on, so refreshing or closing the page will not lose them. Each week has its own saved copy, keyed on the starting date. **Clear All** erases the saved copy for the week currently shown
 - The saved copy is per-device and per-browser: it is not synced, and clearing your browser's site data removes it. Export the PDF for anything you need to keep or share
