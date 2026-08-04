@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weekly Jersey Sales &amp; Point Record</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root{
+    --navy:#1b2a63;
+    --navy-dark:#14204d;
+    --line:#1b2a63;
+    --red:#e2432b;
+    --paper:#ffffff;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    padding:24px;
+    background:#eef0f6;
+    font-family:'Segoe UI', Arial, sans-serif;
+    color:var(--navy);
+  }
+  .toolbar{
+    max-width:820px;
+    margin:0 auto 16px auto;
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .toolbar .hint{font-size:13px;color:#555;}
+  button{
+    background:var(--navy);
+    color:#fff;
+    border:none;
+    padding:10px 18px;
+    border-radius:8px;
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+  }
+  button.secondary{background:#8a93b3;}
+  button:hover{opacity:.9;}
+
+  #sheet{
+    max-width:820px;
+    margin:0 auto;
+    background:var(--paper);
+    border:2px solid var(--navy);
+    border-radius:14px;
+    padding:26px 28px 30px 28px;
+  }
+  .header{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:14px;
+    margin-bottom:4px;
+  }
+  .header h1{
+    font-size:26px;
+    letter-spacing:.5px;
+    margin:0;
+    text-align:center;
+    color:var(--navy);
+  }
+  .shirt{width:44px;height:44px;flex:none;}
+  .underline{
+    border-bottom:3px solid var(--red);
+    width:220px;
+    margin:2px auto 14px auto;
+  }
+  .meta-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom:14px;
+    font-weight:600;
+    font-size:14px;
+  }
+  .meta-row .field{display:flex;align-items:baseline;gap:6px;}
+  .meta-row input[type=text]{
+    border:none;
+    border-bottom:1.5px solid var(--navy);
+    background:transparent;
+    font-family:inherit;
+    font-size:14px;
+    font-weight:600;
+    color:var(--navy);
+    padding:2px 4px;
+  }
+  .week-title{
+    font-weight:800;
+    font-size:15px;
+    text-align:center;
+    flex:1;
+  }
+  .outlet-input{width:150px;}
+  .leader-input{width:150px;}
+  .week-input{width:220px;text-align:center;font-weight:800;}
+
+  table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:6px;
+  }
+  thead th{
+    background:var(--navy);
+    color:#fff;
+    font-size:12.5px;
+    padding:8px 4px;
+    border:1px solid var(--navy);
+  }
+  td{
+    border:1px solid var(--navy);
+    font-size:12.5px;
+    padding:3px 4px;
+    text-align:center;
+    height:26px;
+  }
+  td.date-cell{
+    background:#eef0f6;
+    font-weight:700;
+    font-size:13px;
+    vertical-align:middle;
+  }
+  td.total-label{
+    text-align:left;
+    font-weight:700;
+    background:#f6f7fb;
+  }
+  tr.total-row td{background:#f6f7fb;font-weight:700;}
+  input.cell-input{
+    width:100%;
+    border:none;
+    background:transparent;
+    text-align:center;
+    font-family:inherit;
+    font-size:12.5px;
+    color:var(--navy);
+    padding:2px;
+  }
+  input.cell-input:focus{outline:1px solid var(--red);}
+  input.staff-input{text-align:left;}
+
+  .summary-box{
+    margin-top:22px;
+    border:2px solid var(--navy);
+    border-radius:12px;
+    padding:16px 20px 20px 20px;
+  }
+  .summary-title{
+    background:var(--navy);
+    color:#fff;
+    text-align:center;
+    font-weight:800;
+    font-size:14px;
+    padding:6px 10px;
+    border-radius:6px;
+    width:260px;
+    margin:-30px auto 16px auto;
+  }
+  .summary-line{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px 4px;
+    font-size:13px;
+    font-weight:600;
+    margin-bottom:10px;
+  }
+  .summary-line .item{display:flex;align-items:baseline;gap:6px;}
+  .summary-line input{
+    border:none;
+    border-bottom:1.5px solid var(--navy);
+    background:transparent;
+    font-family:inherit;
+    font-weight:700;
+    font-size:13px;
+    color:var(--navy);
+    width:80px;
+    padding:2px;
+  }
+  .summary-line span.sep{color:var(--navy);opacity:.5;}
+  .dots{
+    border-top:3px dotted var(--red);
+    margin:6px 0 14px 0;
+  }
+  .pcs-title{
+    text-align:center;
+    font-weight:800;
+    font-size:13px;
+    margin-bottom:10px;
+    position:relative;
+  }
+  .pcs-title .rule{
+    display:inline-block;
+    border-bottom:2px solid var(--red);
+    width:60px;
+    height:1px;
+    vertical-align:middle;
+    margin:0 8px;
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="hint">Fill in the form below, then click "Download as PDF" to export it exactly like the printed sheet.</div>
+  <div style="display:flex;gap:10px;">
+    <button class="secondary" id="clearBtn">Clear All</button>
+    <button id="pdfBtn">Download as PDF</button>
+  </div>
+</div>
+
+<div id="sheet">
+  <div class="header">
+    <svg class="shirt" viewBox="0 0 64 64"><path d="M20 6 L8 16 L14 24 L20 20 V56 H44 V20 L50 24 L56 16 L44 6 L38 10 H26 Z" fill="none" stroke="#1b2a63" stroke-width="2.5" stroke-linejoin="round"/></svg>
+    <h1>WEEKLY JERSEY SALES &amp; POINT RECORD</h1>
+    <svg class="shirt" viewBox="0 0 64 64"><path d="M20 6 L8 16 L14 24 L20 20 V56 H44 V20 L50 24 L56 16 L44 6 L38 10 H26 Z" fill="none" stroke="#1b2a63" stroke-width="2.5" stroke-linejoin="round"/></svg>
+  </div>
+  <div class="underline"></div>
+
+  <div class="meta-row">
+    <div class="field">Outlet: <input type="text" id="outlet" class="outlet-input"></div>
+    <div class="week-title"><input type="text" id="weekTitle" class="week-input" value="WEEK 1: 2 AUG – 9 AUG"></div>
+    <div class="field">Team Leader: <input type="text" id="leader" class="leader-input"></div>
+  </div>
+
+  <table id="mainTable">
+    <thead>
+      <tr>
+        <th style="width:9%">Date</th>
+        <th style="width:20%">Staff</th>
+        <th style="width:11%">3-Point Qty</th>
+        <th style="width:11%">2-Point Qty</th>
+        <th style="width:11%">1-Point Qty</th>
+        <th style="width:12%">Total Pcs</th>
+        <th style="width:13%">Total Points</th>
+        <th style="width:13%">Sales (RM)</th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+
+  <div class="summary-box">
+    <div class="summary-title">1 WEEK SALES ACCUMULATED</div>
+    <div class="summary-line">
+      <div class="item">Sales Target: RM <input type="text" id="salesTarget"></div>
+      <span class="sep">|</span>
+      <div class="item">Actual Sales: RM <input type="text" id="actualSales" readonly></div>
+      <span class="sep">|</span>
+      <div class="item">Extra :) : RM <input type="text" id="extraSales" readonly></div>
+      <span class="sep">|</span>
+      <div class="item">Balance :( : RM <input type="text" id="balanceSales" readonly></div>
+    </div>
+    <div class="dots"></div>
+    <div class="pcs-title"><span class="rule"></span>TOTAL PCS SOLD<span class="rule"></span></div>
+    <div class="summary-line">
+      <div class="item">3-Point Pcs: <input type="text" id="pcs3" readonly></div>
+      <span class="sep">|</span>
+      <div class="item">2-Point Pcs: <input type="text" id="pcs2" readonly></div>
+      <span class="sep">|</span>
+      <div class="item">1-Point Pcs: <input type="text" id="pcs1" readonly></div>
+      <span class="sep">|</span>
+      <div class="item">TOTAL PCS: <input type="text" id="pcsTotal" readonly></div>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
