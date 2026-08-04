@@ -119,10 +119,14 @@ function typedInputs() {
   return document.querySelectorAll('#sheet input[data-key]');
 }
 
-function saveData() {
+function collectFields() {
   const data = {};
   typedInputs().forEach(inp => { if (inp.value) data[inp.dataset.key] = inp.value; });
-  try { localStorage.setItem(getStorageKey(), JSON.stringify(data)); } catch (e) {}
+  return data;
+}
+
+function saveData() {
+  try { localStorage.setItem(getStorageKey(), JSON.stringify(collectFields())); } catch (e) {}
 }
 
 function loadData() {
@@ -134,6 +138,148 @@ function loadData() {
     if (typeof v === 'string') inp.value = v;
   });
 }
+
+/* ---------- hand-off between devices ----------
+   The exported PDF is a flat picture of the sheet, so there is nothing in it a
+   machine can read back. Instead the figures are written into the PDF's own
+   metadata as base64 JSON behind this marker. Whoever receives the file can
+   import it and carry on entering the rest of the week, rather than typing the
+   earlier days in again. The marker is deliberately unusual so it can be found
+   by scanning the raw bytes without a PDF parser. */
+const DATA_MARKER = 'JJSDATA1:';
+
+function encodeUtf8Base64(str) {
+  const bytes = new TextEncoder().encode(str);
+  let bin = '';
+  const CHUNK = 0x8000; // chunked so a long week doesn't blow the argument limit
+  for (let i = 0; i < bytes.length; i += CHUNK) {
+    bin += String.fromCharCode.apply(null, bytes.subarray(i, i + CHUNK));
+  }
+  return btoa(bin);
+}
+
+function decodeUtf8Base64(b64) {
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return new TextDecoder().decode(bytes);
+}
+
+function buildTransferPayload() {
+  return {
+    v: 1,
+    weekStart: document.getElementById('weekStart').value,
+    fields: collectFields()
+  };
+}
+
+// Scans backwards, because the metadata sits near the end of the file while the
+// megabytes of image data sit in front of it. Returns candidates newest-first so
+// a chance match inside the image can be discarded by trying the next one.
+function findEmbeddedPayloads(bytes) {
+  const mark = [];
+  for (let i = 0; i < DATA_MARKER.length; i++) mark.push(DATA_MARKER.charCodeAt(i));
+  const found = [];
+  for (let i = bytes.length - mark.length; i >= 0 && found.length < 5; i--) {
+    let hit = true;
+    for (let j = 0; j < mark.length; j++) {
+      if (bytes[i + j] !== mark[j]) { hit = false; break; }
+    }
+    if (!hit) continue;
+    let k = i + mark.length, s = '';
+    while (k < bytes.length) {
+      const c = bytes[k];
+      const isB64 = (c >= 65 && c <= 90) || (c >= 97 && c <= 122) ||
+                    (c >= 48 && c <= 57) || c === 43 || c === 47 || c === 61;
+      if (!isB64) break;
+      s += String.fromCharCode(c);
+      k++;
+    }
+    if (s) found.push(s);
+  }
+  return found;
+}
+
+function readPayloadFromPdf(bytes) {
+  for (const b64 of findEmbeddedPayloads(bytes)) {
+    try {
+      const obj = JSON.parse(decodeUtf8Base64(b64));
+      if (obj && typeof obj === 'object' && obj.fields && typeof obj.fields === 'object') return obj;
+    } catch (e) {
+      // Not our data - almost certainly a coincidental match in the image bytes.
+    }
+  }
+  return null;
+}
+
+function applyImported(payload) {
+  const ws = payload.weekStart;
+  if (typeof ws === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(ws)) {
+    document.getElementById('weekStart').value = ws;
+  }
+  const days = getDaysFromPicker();
+  if (!days.length) return false;
+
+  buildTable(days);
+  const fields = payload.fields || {};
+  // Replace rather than merge, so the sheet matches the PDF exactly.
+  typedInputs().forEach(inp => {
+    const v = fields[inp.dataset.key];
+    inp.value = typeof v === 'string' ? v : '';
+  });
+  if (!fields.weekTitle) updateWeekTitle();
+  recalc();
+  updateStaffDatalist();
+  saveData();
+  return true;
+}
+
+function describePayload(payload) {
+  const f = payload.fields || {};
+  const staff = Object.keys(f).filter(k => k.endsWith('.staff') && f[k].trim()).length;
+  const bits = [];
+  bits.push(f.weekTitle || ('Week starting ' + (payload.weekStart || '?')));
+  if (f.outlet) bits.push('Outlet: ' + f.outlet);
+  if (f.leader) bits.push('Team Leader: ' + f.leader);
+  bits.push(staff + ' staff row' + (staff === 1 ? '' : 's') + ' filled in');
+  return bits.join('\n');
+}
+
+document.getElementById('importBtn').addEventListener('click', () => {
+  document.getElementById('importFile').click();
+});
+
+document.getElementById('importFile').addEventListener('change', async (e) => {
+  const input = e.target;
+  const file = input.files && input.files[0];
+  input.value = ''; // so picking the same file again still fires a change
+  if (!file) return;
+
+  const btn = document.getElementById('importBtn');
+  const label = btn.textContent;
+  btn.textContent = 'Reading...';
+  btn.disabled = true;
+  try {
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    const payload = readPayloadFromPdf(bytes);
+    if (!payload) {
+      alert('No form data found in that PDF.\n\nOnly PDFs exported by this form can be imported. A PDF saved before this feature was added, or printed from somewhere else, has nothing to read.');
+      return;
+    }
+    if (!confirm('Import this report?\n\n' + describePayload(payload) +
+                 '\n\nThis replaces what is currently on screen for that week.')) return;
+    if (applyImported(payload)) {
+      alert('Imported. You can carry on filling in the rest of the week.');
+    } else {
+      alert('That report has no usable week date, so it could not be loaded.');
+    }
+  } catch (err) {
+    alert('Could not read that file: ' + (err && err.message ? err.message : err));
+  } finally {
+    btn.textContent = label;
+    btn.disabled = false;
+  }
+});
 
 /* ---------- staff autocomplete ---------- */
 function updateStaffDatalist() {
@@ -382,6 +528,8 @@ document.getElementById('pdfBtn').addEventListener('click', async () => {
   let unfreeze = null;
   const prevWidth = sheet.style.width;
   const prevMaxWidth = sheet.style.maxWidth;
+  // Captured before the inputs are swapped out for the capture.
+  const transfer = DATA_MARKER + encodeUtf8Base64(JSON.stringify(buildTransferPayload()));
 
   sheet.querySelectorAll('.copy-names').forEach(b => b.style.display = 'none');
 
@@ -415,6 +563,15 @@ document.getElementById('pdfBtn').addEventListener('click', async () => {
     pdf.addImage(imgData, 'PNG', x, y, iw, ih);
 
     const outletVal = document.getElementById('outlet').value || 'Outlet';
+
+    // Rides along in the document metadata so the next person can import it.
+    pdf.setProperties({
+      title: 'Weekly Jersey Sales & Point Record - ' + outletVal,
+      subject: document.getElementById('weekTitle').value || 'Weekly Jersey Sales',
+      creator: 'Weekly Jersey Sales & Point Record',
+      keywords: transfer
+    });
+
     pdf.save(`Weekly_Jersey_Sales_${outletVal.replace(/\s+/g, '_')}.pdf`);
   } finally {
     if (unfreeze) unfreeze();

@@ -337,10 +337,12 @@
       <label for="weekStart">Week starting:</label>
       <input type="date" id="weekStart">
     </div>
-    <div class="hint">Fill the form, then click "Download as PDF".<br>Data auto-saves per week.</div>
+    <div class="hint">Fill the form, then click "Download as PDF".<br>Data auto-saves per week. Send the PDF to the next person &mdash; they can "Import from PDF" to carry on.</div>
   </div>
   <div class="toolbar-right">
     <button class="secondary" id="clearBtn">Clear All</button>
+    <button class="secondary" id="importBtn">Import from PDF</button>
+    <input type="file" id="importFile" accept="application/pdf,.pdf" hidden>
     <button id="pdfBtn">Download as PDF</button>
   </div>
 </div>
