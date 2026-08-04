@@ -9,8 +9,10 @@ A web-based form for tracking weekly jersey sales and point records. This applic
   - Calculates total pieces sold per transaction
   - Calculates total points based on quantity (3-point, 2-point, 1-point items)
   - Daily totals for pieces and points
-- **Manual Sales Entry**: Sales (RM) figures — per transaction and per day — are entered by hand rather than auto-summed, so staff can reconcile against till receipts
-- **Manual Weekly Summary**: Every field in the "1 Week Sales Accumulated" box (Sales Target, Actual Sales, Extra, Balance, and all the Total Pcs Sold figures) is typed in by hand and never overwritten by the form
+  - Weekly Total Pcs Sold figures, accumulated across all eight days
+  - Extra / Balance, derived from your Sales Target and Actual Sales
+- **Manual Sales Entry**: Sales (RM) figures — per transaction and per day, plus Sales Target and Actual Sales — are entered by hand rather than auto-summed, so staff can reconcile against till receipts
+- **Forgiving Number Entry**: Amounts written with thousands separators or currency text (`10,500`, `RM 10 500`) are read correctly
 - **PDF Export**: Download the completed form as a PDF file
 - **Clean Interface**: Professional design with a navy and red color scheme
 - **Responsive Design**: Works on desktop and tablet devices
@@ -25,8 +27,8 @@ A web-based form for tracking weekly jersey sales and point records. This applic
    - **2-Point Qty**: Number of 2-point items sold
    - **1-Point Qty**: Number of 1-point items sold
    - **Sales (RM)**: Sales amount in Malaysian Ringgit (entered manually per transaction and per day)
-5. Fill in the **1 Week Sales Accumulated** box yourself — Sales Target, Actual Sales, Extra, Balance and the Total Pcs Sold figures are all manual entry
-6. Only the per-row and per-day **Total Pcs** / **Total Points** update automatically
+5. Enter your **Sales Target** and **Actual Sales** in the summary box
+6. Everything else updates automatically — row and daily totals, the weekly **Total Pcs Sold** figures, and **Extra** / **Balance**
 7. Click **Download as PDF** to export the form
 
 ## File Structure
