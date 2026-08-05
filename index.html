@@ -460,6 +460,16 @@
   </div>
 </div>
 
-<script src="script.js"></script>
+<script>
+  // GitHub Pages serves files with a 10-minute cache and its headers can't be
+  // changed, which meant a freshly deployed update could look like it had never
+  // gone out. Asking for a unique URL each load means the logic is always the
+  // version currently published, with no hard refresh needed.
+  (function () {
+    var s = document.createElement('script');
+    s.src = 'script.js?v=' + Date.now();
+    document.body.appendChild(s);
+  })();
+</script>
 </body>
 </html>

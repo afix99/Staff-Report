@@ -115,3 +115,4 @@ The date decides which column applies, so weekend days are tinted and show their
 - Importing a PDF **replaces** what is on screen for that week, rather than merging into it, so the sheet ends up matching the PDF exactly. You are asked to confirm first
 - Only PDFs exported by this form can be imported. One saved before this feature existed, or produced by any other program, has no data to read
 - Send the PDF as a file/document. Anything that turns it into a picture first (for example printing and rescanning it) drops the embedded data
+- `script.js` is requested with a unique URL on every page load. GitHub Pages caches files for 10 minutes and its headers cannot be changed, so without this a freshly deployed update could look like it had never gone out. Updates now take effect on the next page load without a hard refresh
