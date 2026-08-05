@@ -13,6 +13,7 @@ A web-based form for tracking weekly jersey sales and point records. This applic
   - Staff names you have already typed are offered as autocomplete suggestions
   - **Copy names** pulls the previous day's staff names into the next day
 - **Reconciliation Check**: If a day's TOTAL Sales figure doesn't match the sum of that day's rows, the cell is highlighted in red
+- **Point Reward**: The Sales column reads `RM 256 / RM 8` — you type the actual sale, and the second figure is the point reward worked out from that row's points
 - **Automatic Calculations**: 
   - Calculates total pieces sold per transaction
   - Calculates total points based on quantity (3-point, 2-point, 1-point items)
@@ -36,7 +37,7 @@ A web-based form for tracking weekly jersey sales and point records. This applic
    - **3-Point Qty**: Number of 3-point items sold
    - **2-Point Qty**: Number of 2-point items sold
    - **1-Point Qty**: Number of 1-point items sold
-   - **Sales (RM)**: Sales amount in Malaysian Ringgit (entered manually per transaction and per day)
+   - **Sales (RM) / Reward**: type the actual sale amount; the reward after the slash is worked out from that row's points
 5. Enter your **Sales Target** and **Actual Sales** in the summary box
 6. Everything else updates automatically — row and daily totals, the weekly **Total Pcs Sold** figures, and **Extra** / **Balance**
 7. Click **Download as PDF** to export the form
@@ -49,6 +50,26 @@ A web-based form for tracking weekly jersey sales and point records. This applic
 4. The whole week so far appears, on the right week — they add their day and export a fresh PDF for the person after them
 
 The data travels inside the PDF itself, so no account, server or shared drive is needed. The PDF still prints and reads exactly as before.
+
+## Point Reward Rules
+
+From the Lokalteez *New Points Commission* team briefing, August 2026. These sit **on top of** the RM0.60-per-piece commission, which this sheet does not track.
+
+**Points per piece**, from the hanger price card — black hanger `1`, grey & gold hanger `2`, Merdeka Special `3`. Free items are excluded.
+
+**Reward per staff member, per day.** The sheet is configured for **Tier 2** outlets, and treats **Friday, Saturday and Sunday** as weekend:
+
+| Weekday (Mon–Thu) | Weekend (Fri–Sun) |
+| --- | --- |
+| 15 points → RM8 | 25 points → RM18 |
+| 25 points → RM18 | 35 points → RM28 |
+| 35 points → RM28 | 45 points → RM38 |
+
+Each row is paid on its own points, because the reward is per staff member — the day's TOTAL row shows those rewards added together, not the reward for the day's combined points.
+
+Past the top of the card the count **starts again**, and only the points on the new card are paid. So 35 weekday points pay RM28, but 50 pay RM8 for the 15 that carried over, and 36 pay nothing.
+
+The date determines which column applies, so weekend days are tinted and show their day name.
 
 ## File Structure
 
