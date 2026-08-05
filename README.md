@@ -13,7 +13,7 @@ A web-based form for tracking weekly jersey sales and point records. This applic
   - Staff names you have already typed are offered as autocomplete suggestions
   - **Copy names** pulls the previous day's staff names into the next day
 - **Reconciliation Check**: If a day's TOTAL Sales figure doesn't match the sum of that day's rows, the cell is highlighted in red
-- **Point Reward**: The Sales column reads `RM 256 / RM 8` — you type the actual sale, and the second figure is the point reward worked out from that row's points
+- **Earnings Per Row**: The Sales column reads `RM 256 / RM 14` — you type the actual sale, and the second figure is what that row earns: RM0.60 a piece once the day qualifies, plus the point reward on top
 - **Automatic Calculations**: 
   - Calculates total pieces sold per transaction
   - Calculates total points based on quantity (3-point, 2-point, 1-point items)
@@ -37,7 +37,7 @@ A web-based form for tracking weekly jersey sales and point records. This applic
    - **3-Point Qty**: Number of 3-point items sold
    - **2-Point Qty**: Number of 2-point items sold
    - **1-Point Qty**: Number of 1-point items sold
-   - **Sales (RM) / Reward**: type the actual sale amount; the reward after the slash is worked out from that row's points
+   - **Sales (RM) / Earnings**: type the actual sale amount; the figure after the slash is the piece commission plus point reward for that row
 5. Enter your **Sales Target** and **Actual Sales** in the summary box
 6. Everything else updates automatically — row and daily totals, the weekly **Total Pcs Sold** figures, and **Extra** / **Balance**
 7. Click **Download as PDF** to export the form
@@ -51,13 +51,26 @@ A web-based form for tracking weekly jersey sales and point records. This applic
 
 The data travels inside the PDF itself, so no account, server or shared drive is needed. The PDF still prints and reads exactly as before.
 
-## Point Reward Rules
+## Earnings Rules
 
-From the Lokalteez *New Points Commission* team briefing, August 2026. These sit **on top of** the RM0.60-per-piece commission, which this sheet does not track.
+From the Lokalteez *New Points Commission* team briefing, August 2026. The sheet is configured for **Tier 2** outlets, and treats **Friday, Saturday and Sunday** as weekend.
 
 **Points per piece**, from the hanger price card — black hanger `1`, grey & gold hanger `2`, Merdeka Special `3`. Free items are excluded.
 
-**Reward per staff member, per day.** The sheet is configured for **Tier 2** outlets, and treats **Friday, Saturday and Sunday** as weekend:
+Everything below is worked out **per staff member, per day**. The figure after the slash in the Sales column is the two parts added together.
+
+### 1. Piece commission — RM0.60 a piece
+
+Paid only once the day reaches the qualifying piece count:
+
+| | Pieces needed |
+| --- | --- |
+| Weekday (Mon–Thu) | 10 pieces |
+| Weekend (Fri–Sun) | 15 pieces |
+
+Once the day qualifies, **every** piece pays RM0.60 — including the ones above the threshold, with no second block to reach. So 10 pieces on a weekday pays RM6.00 and 11 pieces pays RM6.60. Below the threshold it pays nothing.
+
+### 2. Point reward — paid on top
 
 | Weekday (Mon–Thu) | Weekend (Fri–Sun) |
 | --- | --- |
@@ -65,11 +78,13 @@ From the Lokalteez *New Points Commission* team briefing, August 2026. These sit
 | 25 points → RM18 | 35 points → RM28 |
 | 35 points → RM28 | 45 points → RM38 |
 
-Each row is paid on its own points, because the reward is per staff member — the day's TOTAL row shows those rewards added together, not the reward for the day's combined points.
+The reward holds at the highest threshold reached, so selling more can never pay less than selling fewer. The point reward does **not** depend on qualifying for the piece commission — a staff member on 5 pieces with 15 points still earns the RM8.
 
-Past the top of the card the count **starts again**, and only the points on the new card are paid. So 35 weekday points pay RM28, but 50 pay RM8 for the 15 that carried over, and 36 pay nothing.
+### Worked example
 
-The date determines which column applies, so weekend days are tinted and show their day name.
+10 pieces and 15 points on a weekday: RM6.00 piece commission + RM8 point reward = **RM14**, matching the briefing's own example on page 6.
+
+The date decides which column applies, so weekend days are tinted and show their day name. Each row is worked out from its own pieces and points, because staff qualify separately — the day's TOTAL row shows those earnings added together.
 
 ## File Structure
 

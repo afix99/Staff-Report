@@ -226,8 +226,9 @@
     color:var(--navy);
     padding:2px;
   }
-  /* Sales cell reads "RM 256 / RM 20": the amount is typed in, the second
-     figure is the point reward worked out from that row's points. */
+  /* Sales cell reads "RM 256 / RM 14": the amount is typed in, the second
+     figure is what the row earns - RM0.60 a piece once the day qualifies, plus
+     the point reward on top. */
   .sales-wrap{
     display:flex;
     align-items:baseline;
@@ -246,7 +247,7 @@
     text-align:right;
     padding:2px 0;
   }
-  .sales-wrap .rowReward{
+  .sales-wrap .rowEarn{
     flex:0 0 auto;
     font-weight:700;
     font-size:11.5px;
@@ -256,7 +257,7 @@
      removed so the cell doesn't jump about as the first figure is typed. */
   .sales-wrap.is-empty .cur,
   .sales-wrap.is-empty .slash,
-  .sales-wrap.is-empty .rowReward{visibility:hidden;}
+  .sales-wrap.is-empty .rowEarn{visibility:hidden;}
   td.date-cell .day-name{
     display:block;
     font-size:10px;
@@ -425,7 +426,7 @@
         <th>1-Point Qty</th>
         <th>Total Pcs</th>
         <th>Total Points</th>
-        <th>Sales (RM) / Reward</th>
+        <th>Sales (RM) / Earnings</th>
       </tr>
     </thead>
     <tbody id="tbody"></tbody>
