@@ -272,11 +272,6 @@
   td.date-cell.weekend-cell{background:#fdeeeb;}
   td.date-cell.weekend-cell .day-name{color:var(--red); opacity:.9;}
 
-  .reconcile-warn{
-    border-bottom:2px solid var(--red) !important;
-    background:#fff0f0 !important;
-    border-radius:2px;
-  }
 
   .summary-box{
     margin-top:22px;
@@ -440,7 +435,7 @@
     <div class="summary-line">
       <div class="item">Sales Target: RM <input type="text" id="salesTarget" data-key="salesTarget" inputmode="numeric"></div>
       <span class="sep">|</span>
-      <div class="item">Actual Sales: RM <input type="text" id="actualSales" data-key="actualSales" inputmode="numeric"></div>
+      <div class="item">Actual Sales: RM <input type="text" id="actualSales" readonly></div>
       <span class="sep">|</span>
       <div class="item">Extra :) : RM <input type="text" id="extraSales" readonly></div>
       <span class="sep">|</span>

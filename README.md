@@ -12,15 +12,16 @@ A web-based form for tracking weekly jersey sales and point records. This applic
   - Paste a block of cells straight from Excel or Google Sheets
   - Staff names you have already typed are offered as autocomplete suggestions
   - **Copy names** pulls the previous day's staff names into the next day
-- **Reconciliation Check**: If a day's TOTAL Sales figure doesn't match the sum of that day's rows, the cell is highlighted in red
 - **Earnings Per Row**: The Sales column reads `RM 256 / RM 14` — you type the actual sale, and the second figure is what that row earns: RM0.60 a piece once the day qualifies, plus the point reward on top
 - **Automatic Calculations**: 
   - Calculates total pieces sold per transaction
   - Calculates total points based on quantity (3-point, 2-point, 1-point items)
   - Daily totals for pieces and points
   - Weekly Total Pcs Sold figures, accumulated across all eight days
+  - Each day's TOTAL sales, added up from that day's individual sales
+  - Actual Sales, added up from the eight day totals
   - Extra / Balance, derived from your Sales Target and Actual Sales
-- **Manual Sales Entry**: Sales (RM) figures — per transaction and per day, plus Sales Target and Actual Sales — are entered by hand rather than auto-summed, so staff can reconcile against till receipts
+- **Sales Add Themselves Up**: Type each individual sale and the rest follows — the day's TOTAL adds up that day's sales, and Actual Sales adds up the eight day totals. Only the individual sales and the Sales Target are typed in
 - **Forgiving Number Entry**: Amounts written with thousands separators or currency text (`10,500`, `RM 10 500`) are read correctly
 - **PDF Export**: Download the completed form as a PDF file
 - **Hand Off Between People**: The exported PDF quietly carries the week's figures inside it. Send it to whoever is on duty next and they click **Import from PDF** to load everything already entered, then just add their own day — nobody retypes the earlier days
@@ -38,8 +39,8 @@ A web-based form for tracking weekly jersey sales and point records. This applic
    - **2-Point Qty**: Number of 2-point items sold
    - **1-Point Qty**: Number of 1-point items sold
    - **Sales (RM) / Earnings**: type the actual sale amount; the figure after the slash is the piece commission plus point reward for that row
-5. Enter your **Sales Target** and **Actual Sales** in the summary box
-6. Everything else updates automatically — row and daily totals, the weekly **Total Pcs Sold** figures, and **Extra** / **Balance**
+5. Enter your **Sales Target** in the summary box
+6. Everything else updates automatically — row and daily totals, each day's TOTAL sales, **Actual Sales**, the weekly **Total Pcs Sold** figures, and **Extra** / **Balance**
 7. Click **Download as PDF** to export the form
 
 ### Passing the report to the next person
@@ -110,7 +111,8 @@ The date decides which column applies, so weekend days are tinted and show their
 
 - All currency values are in Malaysian Ringgit (RM)
 - Each week runs for 8 days from the date chosen in the picker, with 2 staff entries per day
-- Your entries are saved automatically in the browser on the device you filled them in on, so refreshing or closing the page will not lose them. Each week has its own saved copy, keyed on the starting date. **Clear All** erases the saved copy for the week currently shown
+- Your entries are saved automatically in the browser on the device you filled them in on, so refreshing or closing the page will not lose them. The week you were working on is remembered too, so a refresh comes back to the same sheet. Each week has its own saved copy, keyed on the starting date. **Clear All** erases the saved copy for the week currently shown
+- Only the figures you type are stored. The day totals and Actual Sales are worked out again from the individual sales each time, so they can never drift out of step with the rows
 - The saved copy is per-device and per-browser: it is not synced, and clearing your browser's site data removes it. Export the PDF for anything you need to keep or share
 - Importing a PDF **replaces** what is on screen for that week, rather than merging into it, so the sheet ends up matching the PDF exactly. You are asked to confirm first
 - Only PDFs exported by this form can be imported. One saved before this feature existed, or produced by any other program, has no data to read

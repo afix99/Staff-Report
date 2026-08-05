@@ -134,7 +134,7 @@ function buildTable(dates) {
       <td class="tot-q1"></td>
       <td class="tot-pcs"></td>
       <td class="tot-pts"></td>
-      <td><div class="sales-wrap tot-sales-wrap"><span class="cur">RM</span><input type="text" class="tot-sales-input" inputmode="decimal" data-key="d${dIdx}.totalSales" data-col="sales"></div></td>
+      <td><div class="sales-wrap tot-sales-wrap"><span class="cur">RM</span><input type="text" class="tot-sales-input" data-col="sales" readonly></div></td>
     `;
     tbody.appendChild(totalTr);
   });
@@ -271,6 +271,7 @@ function applyImported(payload) {
   const ws = payload.weekStart;
   if (typeof ws === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(ws)) {
     document.getElementById('weekStart').value = ws;
+    rememberWeek();
   }
   const dates = getDatesFromPicker();
   if (!dates.length) return false;
@@ -383,7 +384,7 @@ function updateRunningBar() {
 
 /* ---------- core calculator ---------- */
 function recalc() {
-  let grand3 = 0, grand2 = 0, grand1 = 0, grandPcs = 0;
+  let grand3 = 0, grand2 = 0, grand1 = 0, grandPcs = 0, grandSales = 0;
 
   currentDays.forEach((day, dIdx) => {
     const rows = tbody.querySelectorAll(`tr[data-day="${dIdx}"]:not([data-total])`);
@@ -415,20 +416,15 @@ function recalc() {
     totalTr.querySelector('.tot-pcs').textContent = dayPcs || '';
     totalTr.querySelector('.tot-pts').textContent = dayPts || '';
     // No commission on the TOTAL row - it is worked out per staff member only,
-    // so the day's cell carries the sales figure alone.
-    totalTr.querySelector('.sales-wrap')
-      .classList.toggle('is-empty', !totalTr.querySelector('.tot-sales-input').value.trim());
-
-    // reconciliation warning
+    // so the day's cell carries the sales figure alone, added up from the
+    // individual sales above it.
     const totSalesInp = totalTr.querySelector('.tot-sales-input');
-    const totSalesVal = num(totSalesInp.value);
-    if (totSalesInp.value && daySalesSum > 0 && Math.abs(daySalesSum - totSalesVal) > 0.01) {
-      totSalesInp.classList.add('reconcile-warn');
-    } else {
-      totSalesInp.classList.remove('reconcile-warn');
-    }
+    totSalesInp.value = daySalesSum ? daySalesSum.toFixed(2) : '';
+    totalTr.querySelector('.sales-wrap')
+      .classList.toggle('is-empty', !daySalesSum);
 
     grand3 += day3; grand2 += day2; grand1 += day1; grandPcs += dayPcs;
+    grandSales += daySalesSum;
   });
 
   document.getElementById('pcs3').value = grand3 || 0;
@@ -436,7 +432,11 @@ function recalc() {
   document.getElementById('pcs1').value = grand1 || 0;
   document.getElementById('pcsTotal').value = grandPcs || 0;
 
-  const actual = num(document.getElementById('actualSales').value);
+  // Actual Sales is the eight day totals added together, which are themselves
+  // the individual sales added up. Only Sales Target is still typed in.
+  const actualEl = document.getElementById('actualSales');
+  actualEl.value = grandSales ? grandSales.toFixed(2) : '';
+  const actual = grandSales;
   const target = num(document.getElementById('salesTarget').value);
   const diff = actual - target;
   document.getElementById('extraSales').value = diff > 0 ? diff.toFixed(2) : '0.00';
@@ -650,6 +650,26 @@ document.getElementById('pdfBtn').addEventListener('click', async () => {
 });
 
 /* ---------- init ---------- */
-document.getElementById('weekStart').addEventListener('change', loadWeek);
-document.getElementById('weekStart').value = toDateInputValue(getMonday(new Date()));
+// The week on screen is remembered too, not just the figures in it. Without
+// this, refreshing while working on another week snapped back to the current
+// one and the sheet looked empty, even though the entries were safe.
+const LAST_WEEK_KEY = 'weeklyJerseySales.lastWeek';
+
+function rememberWeek() {
+  try { localStorage.setItem(LAST_WEEK_KEY, document.getElementById('weekStart').value); } catch (e) {}
+}
+
+function initialWeekValue() {
+  try {
+    const v = localStorage.getItem(LAST_WEEK_KEY);
+    if (v && /^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
+  } catch (e) {}
+  return toDateInputValue(getMonday(new Date()));
+}
+
+document.getElementById('weekStart').addEventListener('change', () => {
+  rememberWeek();
+  loadWeek();
+});
+document.getElementById('weekStart').value = initialWeekValue();
 loadWeek();
