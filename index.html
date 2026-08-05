@@ -258,6 +258,9 @@
   .sales-wrap.is-empty .cur,
   .sales-wrap.is-empty .slash,
   .sales-wrap.is-empty .rowEarn{visibility:hidden;}
+  /* The TOTAL row carries the day's sales only - commission is per staff
+     member, so there is no earnings figure to make room for. */
+  .tot-sales-wrap input{flex:0 1 6em; width:6em; text-align:center;}
   td.date-cell .day-name{
     display:block;
     font-size:10px;

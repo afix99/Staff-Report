@@ -84,7 +84,7 @@ The reward holds at the highest threshold reached, so selling more can never pay
 
 10 pieces and 15 points on a weekday: RM6.00 piece commission + RM8 point reward = **RM14**, matching the briefing's own example on page 6.
 
-The date decides which column applies, so weekend days are tinted and show their day name. Each row is worked out from its own pieces and points, because staff qualify separately — the day's TOTAL row shows those earnings added together.
+The date decides which column applies, so weekend days are tinted and show their day name. Commission is worked out for individual staff only — each row from its own pieces and points, because staff qualify separately. The day's TOTAL row carries the sales figure alone, with no commission on it.
 
 ## File Structure
 

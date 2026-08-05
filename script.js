@@ -134,7 +134,7 @@ function buildTable(dates) {
       <td class="tot-q1"></td>
       <td class="tot-pcs"></td>
       <td class="tot-pts"></td>
-      <td><div class="sales-wrap"><span class="cur">RM</span><input type="text" class="tot-sales-input" inputmode="decimal" data-key="d${dIdx}.totalSales" data-col="sales"><span class="slash">/</span><span class="rowEarn totEarn">RM 0</span></div></td>
+      <td><div class="sales-wrap tot-sales-wrap"><span class="cur">RM</span><input type="text" class="tot-sales-input" inputmode="decimal" data-key="d${dIdx}.totalSales" data-col="sales"></div></td>
     `;
     tbody.appendChild(totalTr);
   });
@@ -388,7 +388,7 @@ function recalc() {
   currentDays.forEach((day, dIdx) => {
     const rows = tbody.querySelectorAll(`tr[data-day="${dIdx}"]:not([data-total])`);
     const weekend = isWeekendDay(currentDates[dIdx]);
-    let day3 = 0, day2 = 0, day1 = 0, dayPcs = 0, dayPts = 0, daySalesSum = 0, dayEarned = 0;
+    let day3 = 0, day2 = 0, day1 = 0, dayPcs = 0, dayPts = 0, daySalesSum = 0;
 
     rows.forEach(tr => {
       const q3 = num(tr.querySelector('.q3').value);
@@ -405,7 +405,6 @@ function recalc() {
       const rowSales = tr.querySelector('.rowSales');
       tr.querySelector('.sales-wrap').classList.toggle('is-empty', !pcs && !pts && !rowSales.value.trim());
       day3 += q3; day2 += q2; day1 += q1; dayPcs += pcs; dayPts += pts;
-      dayEarned += earned;
       daySalesSum += num(tr.querySelector('.rowSales').value);
     });
 
@@ -415,11 +414,10 @@ function recalc() {
     totalTr.querySelector('.tot-q1').textContent = day1 || '';
     totalTr.querySelector('.tot-pcs').textContent = dayPcs || '';
     totalTr.querySelector('.tot-pts').textContent = dayPts || '';
-    // The day's figure is the staff earnings added up, not the earnings for the
-    // day's combined pieces and points - each staff member qualifies separately.
-    totalTr.querySelector('.totEarn').textContent = fmtRM(dayEarned);
+    // No commission on the TOTAL row - it is worked out per staff member only,
+    // so the day's cell carries the sales figure alone.
     totalTr.querySelector('.sales-wrap')
-      .classList.toggle('is-empty', !dayPcs && !dayPts && !totalTr.querySelector('.tot-sales-input').value.trim());
+      .classList.toggle('is-empty', !totalTr.querySelector('.tot-sales-input').value.trim());
 
     // reconciliation warning
     const totSalesInp = totalTr.querySelector('.tot-sales-input');
