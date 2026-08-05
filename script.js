@@ -1,7 +1,56 @@
 const ROWS_PER_DAY = 2;
 const tbody = document.getElementById('tbody');
 const STORAGE_PREFIX = 'weeklyJerseySales.v2';
-let currentDays = [];
+let currentDays = [];   // "3 Aug" labels
+let currentDates = [];  // the Date behind each label, for weekday/weekend
+
+/* ---------- earnings (Lokalteez briefing, August 2026) ----------
+   Tier 2 outlets. Points per piece come from the hanger price card:
+   black = 1, grey/gold = 2, Merdeka = 3, free items excluded.
+   Worked out per staff member per day: RM0.60 a piece once the day reaches the
+   qualifying piece count, plus a point reward on top. The point reward does not
+   itself depend on qualifying. */
+const WEEKEND_DAYS = [5, 6, 0]; // Friday, Saturday, Sunday
+const REWARD_TIERS = {
+  weekday: [[15, 8], [25, 18], [35, 28]],
+  weekend: [[25, 18], [35, 28], [45, 38]]
+};
+const PIECE_RATE = 0.60;
+// Pieces needed before the RM0.60 starts paying. Once the day qualifies every
+// piece pays, including the ones past the threshold - there is no second block
+// to reach.
+const PIECE_QUALIFY = { weekday: 10, weekend: 15 };
+
+function isWeekendDay(date) {
+  return !!date && WEEKEND_DAYS.indexOf(date.getDay()) !== -1;
+}
+
+// Highest threshold reached, and it stays there - selling more can never pay
+// less than selling fewer.
+function pointReward(points, weekend) {
+  const table = weekend ? REWARD_TIERS.weekend : REWARD_TIERS.weekday;
+  let rm = 0;
+  for (let i = 0; i < table.length; i++) {
+    if (points >= table[i][0]) rm = table[i][1];
+  }
+  return rm;
+}
+
+function pieceCommission(pcs, weekend) {
+  const need = weekend ? PIECE_QUALIFY.weekend : PIECE_QUALIFY.weekday;
+  return pcs >= need ? pcs * PIECE_RATE : 0;
+}
+
+// What the row is worth: the piece commission plus the point reward on top.
+// The point reward is not conditional on qualifying for the piece commission.
+function rowEarnings(pcs, points, weekend) {
+  return pieceCommission(pcs, weekend) + pointReward(points, weekend);
+}
+
+function fmtRM(v) {
+  const r = Math.round(v * 100) / 100;
+  return 'RM ' + (r % 1 === 0 ? r : r.toFixed(2));
+}
 
 /* ---------- helpers ---------- */
 function num(v) {
@@ -30,31 +79,37 @@ function formatDateLabel(d) {
   return `${d.getDate()} ${m[d.getMonth()]}`;
 }
 
-function getDaysFromPicker() {
+function getDatesFromPicker() {
   const picker = document.getElementById('weekStart');
   const start = new Date(picker.value + 'T00:00:00');
   if (isNaN(start)) return [];
-  const days = [];
+  const dates = [];
   for (let i = 0; i < 8; i++) {
     const d = new Date(start);
     d.setDate(start.getDate() + i);
-    days.push(formatDateLabel(d));
+    dates.push(d);
   }
-  return days;
+  return dates;
 }
 
 /* ---------- table builder ---------- */
-function buildTable(days) {
-  currentDays = days;
+function buildTable(dates) {
+  currentDates = dates;
+  currentDays = dates.map(formatDateLabel);
   tbody.innerHTML = '';
 
-  days.forEach((day, dIdx) => {
+  const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+  currentDays.forEach((day, dIdx) => {
+    const weekend = isWeekendDay(dates[dIdx]);
     for (let r = 0; r < ROWS_PER_DAY; r++) {
       const tr = document.createElement('tr');
       tr.dataset.day = dIdx;
       const id = `d${dIdx}r${r}`;
+      // The day name makes it obvious which reward table a row is being paid
+      // on, since Fri/Sat/Sun use the higher weekend thresholds.
       const dateCell = r === 0
-        ? `<td class="date-cell" rowspan="${ROWS_PER_DAY + 1}">${day}${dIdx > 0 ? `<button type="button" class="copy-names" data-day="${dIdx}" title="Copy staff names from previous day">↳ Copy names</button>` : ''}</td>`
+        ? `<td class="date-cell${weekend ? ' weekend-cell' : ''}" rowspan="${ROWS_PER_DAY + 1}">${day}<span class="day-name">${dayNames[dates[dIdx].getDay()]}</span>${dIdx > 0 ? `<button type="button" class="copy-names" data-day="${dIdx}" title="Copy staff names from previous day">↳ Copy names</button>` : ''}</td>`
         : '';
       tr.innerHTML = dateCell + `
         <td><input type="text" class="cell-input staff-input" list="staffList" data-key="${id}.staff" data-col="staff" placeholder="Name"></td>
@@ -63,7 +118,7 @@ function buildTable(days) {
         <td><input type="text" class="cell-input q1" inputmode="numeric" data-key="${id}.q1" data-col="q1"></td>
         <td><input type="text" class="cell-input rowPcs" data-col="pcs" readonly></td>
         <td><input type="text" class="cell-input rowPts" data-col="pts" readonly></td>
-        <td><input type="text" class="cell-input rowSales" inputmode="numeric" data-key="${id}.sales" data-col="sales"></td>
+        <td><div class="sales-wrap"><span class="cur">RM</span><input type="text" class="cell-input rowSales" inputmode="decimal" data-key="${id}.sales" data-col="sales"><span class="slash">/</span><span class="rowEarn">RM 0</span></div></td>
       `;
       tbody.appendChild(tr);
     }
@@ -79,7 +134,7 @@ function buildTable(days) {
       <td class="tot-q1"></td>
       <td class="tot-pcs"></td>
       <td class="tot-pts"></td>
-      <td><input type="text" class="tot-sales-input" inputmode="numeric" data-key="d${dIdx}.totalSales" data-col="sales" placeholder=""></td>
+      <td><div class="sales-wrap"><span class="cur">RM</span><input type="text" class="tot-sales-input" inputmode="decimal" data-key="d${dIdx}.totalSales" data-col="sales"><span class="slash">/</span><span class="rowEarn totEarn">RM 0</span></div></td>
     `;
     tbody.appendChild(totalTr);
   });
@@ -217,10 +272,10 @@ function applyImported(payload) {
   if (typeof ws === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(ws)) {
     document.getElementById('weekStart').value = ws;
   }
-  const days = getDaysFromPicker();
-  if (!days.length) return false;
+  const dates = getDatesFromPicker();
+  if (!dates.length) return false;
 
-  buildTable(days);
+  buildTable(dates);
   const fields = payload.fields || {};
   // Replace rather than merge, so the sheet matches the PDF exactly.
   typedInputs().forEach(inp => {
@@ -332,7 +387,8 @@ function recalc() {
 
   currentDays.forEach((day, dIdx) => {
     const rows = tbody.querySelectorAll(`tr[data-day="${dIdx}"]:not([data-total])`);
-    let day3 = 0, day2 = 0, day1 = 0, dayPcs = 0, dayPts = 0, daySalesSum = 0;
+    const weekend = isWeekendDay(currentDates[dIdx]);
+    let day3 = 0, day2 = 0, day1 = 0, dayPcs = 0, dayPts = 0, daySalesSum = 0, dayEarned = 0;
 
     rows.forEach(tr => {
       const q3 = num(tr.querySelector('.q3').value);
@@ -342,7 +398,14 @@ function recalc() {
       const pts = q3 * 3 + q2 * 2 + q1;
       tr.querySelector('.rowPcs').value = pcs ? pcs : '';
       tr.querySelector('.rowPts').value = pts ? pts : '';
+      // The reward is earned per staff member per day, so it comes off this
+      // row's own points rather than the day's combined total.
+      const earned = rowEarnings(pcs, pts, weekend);
+      tr.querySelector('.rowEarn').textContent = fmtRM(earned);
+      const rowSales = tr.querySelector('.rowSales');
+      tr.querySelector('.sales-wrap').classList.toggle('is-empty', !pcs && !pts && !rowSales.value.trim());
       day3 += q3; day2 += q2; day1 += q1; dayPcs += pcs; dayPts += pts;
+      dayEarned += earned;
       daySalesSum += num(tr.querySelector('.rowSales').value);
     });
 
@@ -352,6 +415,11 @@ function recalc() {
     totalTr.querySelector('.tot-q1').textContent = day1 || '';
     totalTr.querySelector('.tot-pcs').textContent = dayPcs || '';
     totalTr.querySelector('.tot-pts').textContent = dayPts || '';
+    // The day's figure is the staff earnings added up, not the earnings for the
+    // day's combined pieces and points - each staff member qualifies separately.
+    totalTr.querySelector('.totEarn').textContent = fmtRM(dayEarned);
+    totalTr.querySelector('.sales-wrap')
+      .classList.toggle('is-empty', !dayPcs && !dayPts && !totalTr.querySelector('.tot-sales-input').value.trim());
 
     // reconciliation warning
     const totSalesInp = totalTr.querySelector('.tot-sales-input');
@@ -390,9 +458,9 @@ function updateWeekTitle() {
 }
 
 function loadWeek() {
-  const days = getDaysFromPicker();
-  if (!days.length) return;
-  buildTable(days);
+  const dates = getDatesFromPicker();
+  if (!dates.length) return;
+  buildTable(dates);
   loadData();
   recalc();
   updateWeekTitle();

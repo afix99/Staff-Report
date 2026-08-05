@@ -226,6 +226,49 @@
     color:var(--navy);
     padding:2px;
   }
+  /* Sales cell reads "RM 256 / RM 14": the amount is typed in, the second
+     figure is what the row earns - RM0.60 a piece once the day qualifies, plus
+     the point reward on top. */
+  .sales-wrap{
+    display:flex;
+    align-items:baseline;
+    justify-content:center;
+    gap:3px;
+    white-space:nowrap;
+  }
+  .sales-wrap .cur,
+  .sales-wrap .slash{flex:0 0 auto; opacity:.65; font-size:11.5px;}
+  .sales-wrap input{
+    /* Sized rather than stretched, so "RM" stays next to its own number
+       instead of being stranded at the far edge of the cell. */
+    flex:0 1 4em;
+    width:4em;
+    min-width:0;
+    text-align:right;
+    padding:2px 0;
+  }
+  .sales-wrap .rowEarn{
+    flex:0 0 auto;
+    font-weight:700;
+    font-size:11.5px;
+    color:var(--red);
+  }
+  /* An untouched row should print blank, not "RM / RM 0". Hidden rather than
+     removed so the cell doesn't jump about as the first figure is typed. */
+  .sales-wrap.is-empty .cur,
+  .sales-wrap.is-empty .slash,
+  .sales-wrap.is-empty .rowEarn{visibility:hidden;}
+  td.date-cell .day-name{
+    display:block;
+    font-size:10px;
+    font-weight:600;
+    opacity:.6;
+    letter-spacing:.4px;
+  }
+  /* Fri/Sat/Sun are paid on the higher weekend thresholds - worth seeing. */
+  td.date-cell.weekend-cell{background:#fdeeeb;}
+  td.date-cell.weekend-cell .day-name{color:var(--red); opacity:.9;}
+
   .reconcile-warn{
     border-bottom:2px solid var(--red) !important;
     background:#fff0f0 !important;
@@ -365,25 +408,25 @@
 
   <table id="mainTable">
     <colgroup>
+      <col style="width:8%">
+      <col style="width:18%">
       <col style="width:9%">
-      <col style="width:20%">
-      <col style="width:11%">
-      <col style="width:11%">
-      <col style="width:11%">
-      <col style="width:12%">
-      <col style="width:13%">
-      <col style="width:13%">
+      <col style="width:9%">
+      <col style="width:9%">
+      <col style="width:9%">
+      <col style="width:10%">
+      <col style="width:28%">
     </colgroup>
     <thead>
       <tr>
-        <th style="width:9%">Date</th>
-        <th style="width:20%">Staff</th>
-        <th style="width:11%">3-Point Qty</th>
-        <th style="width:11%">2-Point Qty</th>
-        <th style="width:11%">1-Point Qty</th>
-        <th style="width:12%">Total Pcs</th>
-        <th style="width:13%">Total Points</th>
-        <th style="width:13%">Sales (RM)</th>
+        <th>Date</th>
+        <th>Staff</th>
+        <th>3-Point Qty</th>
+        <th>2-Point Qty</th>
+        <th>1-Point Qty</th>
+        <th>Total Pcs</th>
+        <th>Total Points</th>
+        <th>Sales (RM) / Earnings</th>
       </tr>
     </thead>
     <tbody id="tbody"></tbody>
