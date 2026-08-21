@@ -28,9 +28,18 @@ const PIECE_QUALIFY = { weekday: 10, weekend: 15 };
 // goes back to following the table.
 const PCS_FIELDS = ['pcs3', 'pcs2', 'pcs1', 'pcsTotal'];
 const pcsOverride = new Set();
+// Same idea for the Total Pcs cell on each row, tracked by its storage key
+// because the rows are rebuilt whenever the week changes.
+const rowPcsOverride = new Set();
 
 function notePcsEdit(el) {
-  if (!el || PCS_FIELDS.indexOf(el.id) === -1) return;
+  if (!el) return;
+  if (el.classList && el.classList.contains('rowPcs')) {
+    if (el.value.trim()) rowPcsOverride.add(el.dataset.key);
+    else rowPcsOverride.delete(el.dataset.key);
+    return;
+  }
+  if (PCS_FIELDS.indexOf(el.id) === -1) return;
   if (el.value.trim()) pcsOverride.add(el.id);
   else pcsOverride.delete(el.id);
 }
@@ -42,6 +51,10 @@ function syncPcsOverrides() {
   PCS_FIELDS.forEach(id => {
     const el = document.getElementById(id);
     if (el && el.value.trim()) pcsOverride.add(id);
+  });
+  rowPcsOverride.clear();
+  document.querySelectorAll('.rowPcs').forEach(inp => {
+    if (inp.value.trim()) rowPcsOverride.add(inp.dataset.key);
   });
 }
 
@@ -145,7 +158,7 @@ function buildTable(dates) {
         <td><input type="text" class="cell-input q3" inputmode="numeric" data-key="${id}.q3" data-col="q3"></td>
         <td><input type="text" class="cell-input q2" inputmode="numeric" data-key="${id}.q2" data-col="q2"></td>
         <td><input type="text" class="cell-input q1" inputmode="numeric" data-key="${id}.q1" data-col="q1"></td>
-        <td><input type="text" class="cell-input rowPcs" data-col="pcs" readonly></td>
+        <td><input type="text" class="cell-input rowPcs" inputmode="numeric" data-key="${id}.pcs" data-col="pcs" title="Adds up the three quantities. Type here to record a different piece count - for pieces that carry no points, say. Clear the box to go back to the automatic total."></td>
         <td><input type="text" class="cell-input rowPts" data-col="pts" readonly></td>
         <td><div class="sales-wrap"><span class="cur">RM</span><input type="text" class="cell-input rowSales" inputmode="decimal" data-key="${id}.sales" data-col="sales"><span class="slash">/</span><span class="rowEarn">RM 0</span></div></td>
       `;
@@ -209,6 +222,7 @@ function collectFields() {
     // Automatic pcs figures are worked out again on load, so storing them would
     // make them look like something the user had typed.
     if (PCS_FIELDS.indexOf(inp.id) !== -1 && !pcsOverride.has(inp.id)) return;
+    if (inp.classList.contains('rowPcs') && !rowPcsOverride.has(inp.dataset.key)) return;
     if (inp.value) data[inp.dataset.key] = inp.value;
   });
   return data;
@@ -436,7 +450,9 @@ function recalc() {
       // decides whether a cell is filled in is that something was typed - not
       // whether the result happens to be more than nothing. Only a row nobody
       // has touched is left blank, so unused days still print clean.
-      const touched = !!(q3i.value.trim() || q2i.value.trim() || q1i.value.trim());
+      const pcsInp = tr.querySelector('.rowPcs');
+      const pcsTyped = rowPcsOverride.has(pcsInp.dataset.key);
+      const touched = !!(q3i.value.trim() || q2i.value.trim() || q1i.value.trim()) || pcsTyped;
       const hasSales = rowSales.value.trim() !== '';
       if (touched) dayTouched = true;
       if (hasSales) { dayHasSales = true; anySalesTyped = true; }
@@ -444,9 +460,12 @@ function recalc() {
       const q3 = num(q3i.value);
       const q2 = num(q2i.value);
       const q1 = num(q1i.value);
-      const pcs = q3 + q2 + q1;
       const pts = q3 * 3 + q2 * 2 + q1;
-      tr.querySelector('.rowPcs').value = touched ? pcs : '';
+      // Total Pcs follows the three quantities unless it has been written in.
+      // That is how a piece carrying no points still counts towards the RM0.60
+      // and towards qualifying, without inventing points it did not earn.
+      const pcs = pcsTyped ? num(pcsInp.value) : q3 + q2 + q1;
+      if (!pcsTyped) pcsInp.value = touched ? pcs : '';
       tr.querySelector('.rowPts').value = touched ? pts : '';
       // The reward is earned per staff member per day, so it comes off this
       // row's own points rather than the day's combined total.
@@ -564,7 +583,11 @@ document.getElementById('sheet').addEventListener('paste', (e) => {
     const tInputs = Array.from(tableRow.querySelectorAll('input'));
     let cIdx = startColIdx;
     pastedRow.forEach((val) => {
-      while (cIdx < tInputs.length && tInputs[cIdx].readOnly) cIdx++;
+      // Total Pcs is editable but works itself out, so a pasted block skips it
+      // the same way it skips Total Points - otherwise a five-column paste of
+      // name/3pt/2pt/1pt/sales would drop the sales figure into it.
+      const skipOnPaste = i => i.readOnly || i.classList.contains('rowPcs');
+      while (cIdx < tInputs.length && skipOnPaste(tInputs[cIdx])) cIdx++;
       if (cIdx < tInputs.length) {
         tInputs[cIdx].value = val.trim();
         tInputs[cIdx].dispatchEvent(new Event('input', { bubbles: true }));
@@ -629,6 +652,7 @@ document.getElementById('clearBtn').addEventListener('click', () => {
   if (!confirm('Clear all filled data for this week?')) return;
   document.querySelectorAll('#sheet input:not([readonly]):not(#weekTitle)').forEach(inp => { inp.value = ''; });
   pcsOverride.clear();
+  rowPcsOverride.clear();
   recalc();
   saveData();
   updateStaffDatalist();
