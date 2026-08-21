@@ -113,7 +113,7 @@ function buildTable(dates) {
         ? `<td class="date-cell${weekend ? ' weekend-cell' : ''}" rowspan="${ROWS_PER_DAY + 1}">${day}<span class="day-name">${dayNames[dates[dIdx].getDay()]}</span>${dIdx > 0 ? `<button type="button" class="copy-names" data-day="${dIdx}" title="Copy staff names from previous day">↳ Copy names</button>` : ''}</td>`
         : '';
       tr.innerHTML = dateCell + `
-        <td><input type="text" class="cell-input staff-input" list="staffList" data-key="${id}.staff" data-col="staff" placeholder="Name"></td>
+        <td><input type="text" class="cell-input staff-input" list="staffList" data-key="${id}.staff" data-col="staff"></td>
         <td><input type="text" class="cell-input q3" inputmode="numeric" data-key="${id}.q3" data-col="q3"></td>
         <td><input type="text" class="cell-input q2" inputmode="numeric" data-key="${id}.q2" data-col="q2"></td>
         <td><input type="text" class="cell-input q1" inputmode="numeric" data-key="${id}.q1" data-col="q1"></td>
