@@ -13,6 +13,7 @@
     --line:#1b2a63;
     --red:#e2432b;
     --paper:#ffffff;
+    --grid:#aab3d1;
   }
   *{box-sizing:border-box;}
   body{
@@ -135,9 +136,20 @@
   }
   .shirt{width:44px;height:44px;flex:none;}
   .underline{
+    display:flex;
+    justify-content:center;
+    gap:230px;
+    margin:2px auto 10px auto;
+  }
+  .underline span{
+    display:block;
+    width:110px;
     border-bottom:3px solid var(--red);
-    width:220px;
-    margin:2px auto 14px auto;
+  }
+  /* Full-width rule between the title and the Outlet / Week / Leader row. */
+  .head-rule{
+    border-bottom:1.5px solid var(--navy);
+    margin:0 0 12px 0;
   }
   .meta-row{
     display:flex;
@@ -183,18 +195,29 @@
     padding:8px 4px;
     border:1px solid var(--navy);
   }
+  /* The printed form rules the staff rows in a pale line and saves the strong
+     navy for the TOTAL row and the divide between one day and the next. */
   td{
-    border:1px solid var(--navy);
+    border:1px solid var(--grid);
     font-size:12.5px;
     padding:3px 4px;
     text-align:center;
     height:26px;
   }
+  tr.total-row td{
+    border-top:1.5px solid var(--navy);
+    border-bottom:1.5px solid var(--navy);
+  }
+  tbody tr td:last-child{border-right:1.5px solid var(--navy);}
   td.date-cell{
     background:#eef0f6;
     font-weight:700;
     font-size:13px;
     vertical-align:middle;
+    /* The date column is boxed in strong navy on both sides, so each day
+       reads as one block rather than a run of loose rows. */
+    border-left:1.5px solid var(--navy);
+    border-right:1.5px solid var(--navy);
   }
   td.total-label{
     text-align:left;
@@ -396,7 +419,8 @@
     <h1>WEEKLY JERSEY SALES &amp; POINT RECORD</h1>
     <svg class="shirt" viewBox="0 0 64 64"><path d="M20 6 L8 16 L14 24 L20 20 V56 H44 V20 L50 24 L56 16 L44 6 L38 10 H26 Z" fill="none" stroke="#1b2a63" stroke-width="2.5" stroke-linejoin="round"/></svg>
   </div>
-  <div class="underline"></div>
+  <div class="underline"><span></span><span></span></div>
+  <div class="head-rule"></div>
 
   <div class="meta-row">
     <div class="field">Outlet: <input type="text" id="outlet" data-key="outlet" class="outlet-input"></div>
