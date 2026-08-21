@@ -4,8 +4,8 @@ A web-based form for tracking weekly jersey sales and point records. This applic
 
 ## Features
 
-- **Week Picker**: Choose the week's starting date and the eight day rows relabel themselves automatically
-- **Daily Sales Tracking**: Record sales data for up to 2 staff members per day across 8 days
+- **Week Picker**: Choose the week's starting date and the seven day rows relabel themselves automatically
+- **Daily Sales Tracking**: Record sales data for up to 2 staff members per day across the 7 days of the week
 - **Running Totals Bar**: A bar pinned to the top of the screen shows Target, Actual, Total Pcs and the Extra/Balance difference while you scroll
 - **Faster Entry**:
   - Arrow keys and Enter move between cells, staying in the same column vertically
@@ -17,11 +17,11 @@ A web-based form for tracking weekly jersey sales and point records. This applic
   - Calculates total pieces sold per transaction
   - Calculates total points based on quantity (3-point, 2-point, 1-point items)
   - Daily totals for pieces and points
-  - Weekly Total Pcs Sold figures, accumulated across all eight days
+  - Weekly Total Pcs Sold figures, accumulated across all seven days
   - Each day's TOTAL sales, added up from that day's individual sales
-  - Actual Sales, added up from the eight day totals
+  - Actual Sales, added up from the seven day totals
   - Extra / Balance, derived from your Sales Target and Actual Sales
-- **Sales Add Themselves Up**: Type each individual sale and the rest follows — the day's TOTAL adds up that day's sales, and Actual Sales adds up the eight day totals. Only the individual sales and the Sales Target are typed in
+- **Sales Add Themselves Up**: Type each individual sale and the rest follows — the day's TOTAL adds up that day's sales, and Actual Sales adds up the seven day totals. Only the individual sales and the Sales Target are typed in
 - **Forgiving Number Entry**: Amounts written with thousands separators or currency text (`10,500`, `RM 10 500`) are read correctly
 - **PDF Export**: Download the completed form as a PDF file
 - **Hand Off Between People**: The exported PDF quietly carries the week's figures inside it. Send it to whoever is on duty next and they click **Import from PDF** to load everything already entered, then just add their own day — nobody retypes the earlier days
@@ -110,7 +110,7 @@ The date decides which column applies, so weekend days are tinted and show their
 ## Notes
 
 - All currency values are in Malaysian Ringgit (RM)
-- Each week runs for 8 days from the date chosen in the picker, with 2 staff entries per day
+- Each week runs for 7 days from the date chosen in the picker, with 2 staff entries per day
 - Your entries are saved automatically in the browser on the device you filled them in on, so refreshing or closing the page will not lose them. The week you were working on is remembered too, so a refresh comes back to the same sheet. Each week has its own saved copy, keyed on the starting date. **Clear All** erases the saved copy for the week currently shown
 - Only the figures you type are stored. The day totals and Actual Sales are worked out again from the individual sales each time, so they can never drift out of step with the rows
 - The saved copy is per-device and per-browser: it is not synced, and clearing your browser's site data removes it. Export the PDF for anything you need to keep or share

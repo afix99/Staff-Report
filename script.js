@@ -1,4 +1,5 @@
 const ROWS_PER_DAY = 2;
+const DAYS_PER_WEEK = 7;
 const tbody = document.getElementById('tbody');
 const STORAGE_PREFIX = 'weeklyJerseySales.v2';
 let currentDays = [];   // "3 Aug" labels
@@ -84,7 +85,7 @@ function getDatesFromPicker() {
   const start = new Date(picker.value + 'T00:00:00');
   if (isNaN(start)) return [];
   const dates = [];
-  for (let i = 0; i < 8; i++) {
+  for (let i = 0; i < DAYS_PER_WEEK; i++) {
     const d = new Date(start);
     d.setDate(start.getDate() + i);
     dates.push(d);
