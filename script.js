@@ -1,4 +1,4 @@
-const ROWS_PER_DAY = 2;
+const ROWS_PER_DAY = 3;
 const DAYS_PER_WEEK = 7;
 const tbody = document.getElementById('tbody');
 const STORAGE_PREFIX = 'weeklyJerseySales.v2';
@@ -460,12 +460,34 @@ function recalc() {
 }
 
 /* ---------- week loader ---------- */
+// "17 AUG", to match the printed form's capitals.
+function upperDateLabel(d) {
+  const m = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  return `${d.getDate()} ${m[d.getMonth()]}`;
+}
+
+// Which week of its own month the sheet covers, counted from the start date:
+// the 1st-7th is week 1, the 8th-14th week 2, and so on.
+function weekOfMonth(d) {
+  return Math.floor((d.getDate() - 1) / 7) + 1;
+}
+
+// "WEEK 3: 17 AUG – 23 AUG 2026". The year is written once at the end unless
+// the week runs across New Year, when both are needed to stay unambiguous.
+function defaultWeekTitle(dates) {
+  const first = dates[0];
+  const last = dates[dates.length - 1];
+  const head = `WEEK ${weekOfMonth(first)}: ${upperDateLabel(first)}`;
+  return first.getFullYear() === last.getFullYear()
+    ? `${head} – ${upperDateLabel(last)} ${last.getFullYear()}`
+    : `${head} ${first.getFullYear()} – ${upperDateLabel(last)} ${last.getFullYear()}`;
+}
+
 function updateWeekTitle() {
-  const days = currentDays;
-  if (!days.length) return;
+  if (!currentDates.length) return;
   const inp = document.getElementById('weekTitle');
   if (!inp.value || inp.value.match(/^WEEK[:\s]/i)) {
-    inp.value = `WEEK: ${days[0]} – ${days[days.length - 1]}`;
+    inp.value = defaultWeekTitle(currentDates);
   }
 }
 

@@ -4,8 +4,8 @@ A web-based form for tracking weekly jersey sales and point records. This applic
 
 ## Features
 
-- **Week Picker**: Choose the week's starting date and the seven day rows relabel themselves automatically
-- **Daily Sales Tracking**: Record sales data for up to 2 staff members per day across the 7 days of the week
+- **Week Picker**: Choose the week's starting date and the seven day rows relabel themselves automatically. The title numbers the week within its month, as `WEEK 3: 17 AUG – 23 AUG 2026`
+- **Daily Sales Tracking**: Record sales data for up to 3 staff members per day across the 7 days of the week
 - **Running Totals Bar**: A bar pinned to the top of the screen shows Target, Actual, Total Pcs and the Extra/Balance difference while you scroll
 - **Faster Entry**:
   - Arrow keys and Enter move between cells, staying in the same column vertically
@@ -110,7 +110,7 @@ The date decides which column applies, so weekend days are tinted and show their
 ## Notes
 
 - All currency values are in Malaysian Ringgit (RM)
-- Each week runs for 7 days from the date chosen in the picker, with 2 staff entries per day
+- Each week runs for 7 days from the date chosen in the picker, with 3 staff entries per day
 - Your entries are saved automatically in the browser on the device you filled them in on, so refreshing or closing the page will not lose them. The week you were working on is remembered too, so a refresh comes back to the same sheet. Each week has its own saved copy, keyed on the starting date. **Clear All** erases the saved copy for the week currently shown
 - Only the figures you type are stored. The day totals and Actual Sales are worked out again from the individual sales each time, so they can never drift out of step with the rows
 - The saved copy is per-device and per-browser: it is not synced, and clearing your browser's site data removes it. Export the PDF for anything you need to keep or share
