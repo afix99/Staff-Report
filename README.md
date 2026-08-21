@@ -14,7 +14,7 @@ A web-based form for tracking weekly jersey sales and point records. This applic
   - **Copy names** pulls the previous day's staff names into the next day
 - **Earnings Per Row**: The Sales column reads `RM 256 / RM 14` — you type the actual sale, and the second figure is what that row earns: RM0.60 a piece once the day qualifies, plus the point reward on top
 - **Automatic Calculations**: 
-  - Calculates total pieces sold per transaction
+  - Calculates total pieces sold per transaction — and the **Total Pcs** cell can be typed over when a row sold pieces that carry no points; clearing it goes back to the automatic total
   - Calculates total points based on quantity (3-point, 2-point, 1-point items)
   - Daily totals for pieces and points
   - Weekly Total Pcs Sold figures, accumulated across all seven days — and you can type over any of them when a week needs a different figure recorded; clearing the box hands it back to the automatic total
@@ -113,7 +113,7 @@ The date decides which column applies, so weekend days are tinted and show their
 - Each week runs for 7 days from the date chosen in the picker, with 3 staff entries per day
 - Your entries are saved automatically in the browser on the device you filled them in on, so refreshing or closing the page will not lose them. The week you were working on is remembered too, so a refresh comes back to the same sheet. Each week has its own saved copy, keyed on the starting date. **Clear All** erases the saved copy for the week currently shown
 - Only the figures you type are stored. The day totals and Actual Sales are worked out again from the individual sales each time, so they can never drift out of step with the rows
-- The four **Total Pcs Sold** boxes add themselves up but can be typed over. A box you have written in keeps your figure, including after a reload and through the PDF hand-off; clear it and it goes back to following the table. **Clear All** resets them
+- The **Total Pcs** column and the four **Total Pcs Sold** boxes add themselves up but can be typed over. A cell you have written in keeps your figure, including after a reload and through the PDF hand-off; clear it and it goes back to calculating. **Clear All** resets them. A written-in Total Pcs is what the RM0.60 and the qualifying count are worked out from, while Total Points still comes from the three quantities. Pasted blocks step over Total Pcs, so a name/3pt/2pt/1pt/sales paste still lands the sales figure in Sales
 - The saved copy is per-device and per-browser: it is not synced, and clearing your browser's site data removes it. Export the PDF for anything you need to keep or share
 - Importing a PDF **replaces** what is on screen for that week, rather than merging into it, so the sheet ends up matching the PDF exactly. You are asked to confirm first
 - Only PDFs exported by this form can be imported. One saved before this feature existed, or produced by any other program, has no data to read
