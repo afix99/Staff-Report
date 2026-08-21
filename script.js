@@ -22,6 +22,34 @@ const PIECE_RATE = 0.60;
 // to reach.
 const PIECE_QUALIFY = { weekday: 10, weekend: 15 };
 
+// The four TOTAL PCS SOLD boxes add themselves up from the table, but can be
+// typed over when the week needs a different figure recorded. A box the user
+// has written in is left alone until they clear it again, at which point it
+// goes back to following the table.
+const PCS_FIELDS = ['pcs3', 'pcs2', 'pcs1', 'pcsTotal'];
+const pcsOverride = new Set();
+
+function notePcsEdit(el) {
+  if (!el || PCS_FIELDS.indexOf(el.id) === -1) return;
+  if (el.value.trim()) pcsOverride.add(el.id);
+  else pcsOverride.delete(el.id);
+}
+
+// After loading a week, anything sitting in these boxes can only be something
+// the user typed - the automatic figures are never saved.
+function syncPcsOverrides() {
+  pcsOverride.clear();
+  PCS_FIELDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && el.value.trim()) pcsOverride.add(id);
+  });
+}
+
+function setPcsField(id, value) {
+  if (pcsOverride.has(id)) return;   // the user's own figure stands
+  document.getElementById(id).value = value;
+}
+
 function isWeekendDay(date) {
   return !!date && WEEKEND_DAYS.indexOf(date.getDay()) !== -1;
 }
@@ -177,7 +205,12 @@ function typedInputs() {
 
 function collectFields() {
   const data = {};
-  typedInputs().forEach(inp => { if (inp.value) data[inp.dataset.key] = inp.value; });
+  typedInputs().forEach(inp => {
+    // Automatic pcs figures are worked out again on load, so storing them would
+    // make them look like something the user had typed.
+    if (PCS_FIELDS.indexOf(inp.id) !== -1 && !pcsOverride.has(inp.id)) return;
+    if (inp.value) data[inp.dataset.key] = inp.value;
+  });
   return data;
 }
 
@@ -285,6 +318,7 @@ function applyImported(payload) {
     inp.value = typeof v === 'string' ? v : '';
   });
   if (!fields.weekTitle) updateWeekTitle();
+  syncPcsOverrides();
   recalc();
   updateStaffDatalist();
   saveData();
@@ -441,10 +475,10 @@ function recalc() {
     grandSales += daySalesSum;
   });
 
-  document.getElementById('pcs3').value = grand3 || 0;
-  document.getElementById('pcs2').value = grand2 || 0;
-  document.getElementById('pcs1').value = grand1 || 0;
-  document.getElementById('pcsTotal').value = grandPcs || 0;
+  setPcsField('pcs3', grand3 || 0);
+  setPcsField('pcs2', grand2 || 0);
+  setPcsField('pcs1', grand1 || 0);
+  setPcsField('pcsTotal', grandPcs || 0);
 
   // Actual Sales is the eight day totals added together, which are themselves
   // the individual sales added up. Only Sales Target is still typed in.
@@ -495,7 +529,12 @@ function loadWeek() {
   const dates = getDatesFromPicker();
   if (!dates.length) return;
   buildTable(dates);
+  // The automatic pcs figures are never saved, so anything left in these boxes
+  // belongs to the week being navigated away from. Clearing them first stops
+  // last week's total being mistaken for a figure this week's user typed.
+  PCS_FIELDS.forEach(id => { document.getElementById(id).value = ''; });
   loadData();
+  syncPcsOverrides();
   recalc();
   updateWeekTitle();
   updateStaffDatalist();
@@ -579,6 +618,7 @@ document.getElementById('sheet').addEventListener('keydown', (e) => {
 
 /* ---------- global input listener ---------- */
 document.getElementById('sheet').addEventListener('input', (e) => {
+  notePcsEdit(e.target);
   recalc();
   saveData();
   if (e.target.classList.contains('staff-input')) updateStaffDatalist();
@@ -588,6 +628,7 @@ document.getElementById('sheet').addEventListener('input', (e) => {
 document.getElementById('clearBtn').addEventListener('click', () => {
   if (!confirm('Clear all filled data for this week?')) return;
   document.querySelectorAll('#sheet input:not([readonly]):not(#weekTitle)').forEach(inp => { inp.value = ''; });
+  pcsOverride.clear();
   recalc();
   saveData();
   updateStaffDatalist();
