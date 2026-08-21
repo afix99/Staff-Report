@@ -662,7 +662,11 @@ document.getElementById('pdfBtn').addEventListener('click', async () => {
     const x = (pw - iw) / 2;
     const y = margin;
 
-    pdf.addImage(imgData, 'PNG', x, y, iw, ih);
+    // jsPDF stores the bitmap uncompressed unless told otherwise, which made a
+    // 33MB file out of a mostly-white page. 'SLOW' is Flate (zlib) at its
+    // highest setting - lossless, so every pixel is unchanged, but the sheet
+    // compresses to well under a megabyte and is actually sendable.
+    pdf.addImage(imgData, 'PNG', x, y, iw, ih, undefined, 'SLOW');
 
     const outletVal = document.getElementById('outlet').value || 'Outlet';
 
