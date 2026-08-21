@@ -385,44 +385,57 @@ function updateRunningBar() {
 
 /* ---------- core calculator ---------- */
 function recalc() {
-  let grand3 = 0, grand2 = 0, grand1 = 0, grandPcs = 0, grandSales = 0;
+  let grand3 = 0, grand2 = 0, grand1 = 0, grandPcs = 0, grandSales = 0, anySalesTyped = false;
 
   currentDays.forEach((day, dIdx) => {
     const rows = tbody.querySelectorAll(`tr[data-day="${dIdx}"]:not([data-total])`);
     const weekend = isWeekendDay(currentDates[dIdx]);
     let day3 = 0, day2 = 0, day1 = 0, dayPcs = 0, dayPts = 0, daySalesSum = 0;
+    let dayTouched = false, dayHasSales = false;
 
     rows.forEach(tr => {
-      const q3 = num(tr.querySelector('.q3').value);
-      const q2 = num(tr.querySelector('.q2').value);
-      const q1 = num(tr.querySelector('.q1').value);
+      const q3i = tr.querySelector('.q3');
+      const q2i = tr.querySelector('.q2');
+      const q1i = tr.querySelector('.q1');
+      const rowSales = tr.querySelector('.rowSales');
+      // A quantity typed as 0 is a real answer and has to read 0, so what
+      // decides whether a cell is filled in is that something was typed - not
+      // whether the result happens to be more than nothing. Only a row nobody
+      // has touched is left blank, so unused days still print clean.
+      const touched = !!(q3i.value.trim() || q2i.value.trim() || q1i.value.trim());
+      const hasSales = rowSales.value.trim() !== '';
+      if (touched) dayTouched = true;
+      if (hasSales) { dayHasSales = true; anySalesTyped = true; }
+
+      const q3 = num(q3i.value);
+      const q2 = num(q2i.value);
+      const q1 = num(q1i.value);
       const pcs = q3 + q2 + q1;
       const pts = q3 * 3 + q2 * 2 + q1;
-      tr.querySelector('.rowPcs').value = pcs ? pcs : '';
-      tr.querySelector('.rowPts').value = pts ? pts : '';
+      tr.querySelector('.rowPcs').value = touched ? pcs : '';
+      tr.querySelector('.rowPts').value = touched ? pts : '';
       // The reward is earned per staff member per day, so it comes off this
       // row's own points rather than the day's combined total.
       const earned = rowEarnings(pcs, pts, weekend);
       tr.querySelector('.rowEarn').textContent = fmtRM(earned);
-      const rowSales = tr.querySelector('.rowSales');
-      tr.querySelector('.sales-wrap').classList.toggle('is-empty', !pcs && !pts && !rowSales.value.trim());
+      tr.querySelector('.sales-wrap').classList.toggle('is-empty', !touched && !hasSales);
       day3 += q3; day2 += q2; day1 += q1; dayPcs += pcs; dayPts += pts;
-      daySalesSum += num(tr.querySelector('.rowSales').value);
+      daySalesSum += num(rowSales.value);
     });
 
     const totalTr = tbody.querySelector(`tr[data-day="${dIdx}"][data-total="1"]`);
-    totalTr.querySelector('.tot-q3').textContent = day3 || '';
-    totalTr.querySelector('.tot-q2').textContent = day2 || '';
-    totalTr.querySelector('.tot-q1').textContent = day1 || '';
-    totalTr.querySelector('.tot-pcs').textContent = dayPcs || '';
-    totalTr.querySelector('.tot-pts').textContent = dayPts || '';
+    totalTr.querySelector('.tot-q3').textContent = dayTouched ? day3 : '';
+    totalTr.querySelector('.tot-q2').textContent = dayTouched ? day2 : '';
+    totalTr.querySelector('.tot-q1').textContent = dayTouched ? day1 : '';
+    totalTr.querySelector('.tot-pcs').textContent = dayTouched ? dayPcs : '';
+    totalTr.querySelector('.tot-pts').textContent = dayTouched ? dayPts : '';
     // No commission on the TOTAL row - it is worked out per staff member only,
     // so the day's cell carries the sales figure alone, added up from the
     // individual sales above it.
     const totSalesInp = totalTr.querySelector('.tot-sales-input');
-    totSalesInp.value = daySalesSum ? daySalesSum.toFixed(2) : '';
+    totSalesInp.value = dayHasSales ? daySalesSum.toFixed(2) : '';
     totalTr.querySelector('.sales-wrap')
-      .classList.toggle('is-empty', !daySalesSum);
+      .classList.toggle('is-empty', !dayHasSales);
 
     grand3 += day3; grand2 += day2; grand1 += day1; grandPcs += dayPcs;
     grandSales += daySalesSum;
@@ -436,7 +449,7 @@ function recalc() {
   // Actual Sales is the eight day totals added together, which are themselves
   // the individual sales added up. Only Sales Target is still typed in.
   const actualEl = document.getElementById('actualSales');
-  actualEl.value = grandSales ? grandSales.toFixed(2) : '';
+  actualEl.value = anySalesTyped ? grandSales.toFixed(2) : '';
   const actual = grandSales;
   const target = num(document.getElementById('salesTarget').value);
   const diff = actual - target;
