@@ -23,7 +23,7 @@ A web-based form for tracking weekly jersey sales and point records. This applic
   - Extra / Balance, derived from your Sales Target and Actual Sales
 - **Sales Add Themselves Up**: Type each individual sale and the rest follows — the day's TOTAL adds up that day's sales, and Actual Sales adds up the seven day totals. Only the individual sales and the Sales Target are typed in
 - **Forgiving Number Entry**: Amounts written with thousands separators or currency text (`10,500`, `RM 10 500`) are read correctly
-- **PDF Export**: Download the completed form as a PDF file
+- **PDF Export**: Download the completed form as a PDF file. The page is stored losslessly compressed, so a week comes out well under a megabyte at full resolution and is easy to send on
 - **Hand Off Between People**: The exported PDF quietly carries the week's figures inside it. Send it to whoever is on duty next and they click **Import from PDF** to load everything already entered, then just add their own day — nobody retypes the earlier days
 - **Clean Interface**: Professional design with a navy and red color scheme
 - **Automatic Local Save**: Everything typed into the sheet is stored in the browser as you go, so a refresh, a closed tab or an accidental back button doesn't lose the week's work. Each week is saved separately, so switching weeks with the picker keeps both
@@ -117,4 +117,5 @@ The date decides which column applies, so weekend days are tinted and show their
 - Importing a PDF **replaces** what is on screen for that week, rather than merging into it, so the sheet ends up matching the PDF exactly. You are asked to confirm first
 - Only PDFs exported by this form can be imported. One saved before this feature existed, or produced by any other program, has no data to read
 - Send the PDF as a file/document. Anything that turns it into a picture first (for example printing and rescanning it) drops the embedded data
+- The exported page is compressed with Flate, which is lossless — the image is pixel-for-pixel what was captured, just stored efficiently. Nothing is re-encoded and no sharpness is traded away
 - `script.js` is requested with a unique URL on every page load. GitHub Pages caches files for 10 minutes and its headers cannot be changed, so without this a freshly deployed update could look like it had never gone out. Updates now take effect on the next page load without a hard refresh
